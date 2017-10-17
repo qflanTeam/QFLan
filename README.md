@@ -1,7 +1,7 @@
 # QFLan
 A framework for quantitative modeling and analysis of highly (re)configurable systems
 
-<img class=" alignright" src="http://sysma.imtlucca.it/wp-content/uploads/2017/06/logoQFLAN.png" alt="QFLAN" width="200" height="184" />
+<img class=" alignright" src="https://github.com/qflanTeam/QFLan/blob/master/logo.png" alt="QFLAN" width="200" height="184" />
 
 <h1>Quick Links</h1>
 <ul>
