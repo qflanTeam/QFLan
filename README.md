@@ -31,7 +31,7 @@ A framework for quantitative modeling and analysis of highly (re)configurable sy
  	<li style="text-align: justify;">probability of dumping a machine.</li>
 </ul>
 The tool is provided with a modern integrated development environment built using <a href="https://eclipse.org/Xtext/">XTEXT</a> technology, featuring high-level model and property specification languages.
-<p style="text-align: justify;"><img class="aligncenter" src="http://sysma.imtlucca.it/wp-content/uploads/2017/10/schreenshotMachineLabelled.png" alt="QFLan" /></p>
+<p style="text-align: justify;"><img class="aligncenter" src="https://github.com/qflanTeam/QFLan/blob/master/schreenshotMachineLabelled.png" alt="QFLan" /></p>
 
 
 For further information please visit <a href="https://github.com/qflanTeam/QFLan/wiki">QFLAN main page</a>.
