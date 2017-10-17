@@ -22,8 +22,13 @@ A framework for quantitative modeling and analysis of highly (re)configurable sy
  	<li style="text-align: justify;">machines can have a certain maximum cost,</li>
  	<li style="text-align: justify;">machines serving coffee-based beverages cannot sell tea,</li>
  	<li style="text-align: justify;">in order to serve cappuccino it is necessary to have the feature of serving also coffee,</li>
+</ul>
+
+Also it is possible to express conditions like:
+<ul>
   	<li style="text-align: justify;">machines serving cappuccino provided with a coca dispenser can serve chocaccino.</li>
 </ul>
+
 <p style="text-align: justify;">QFLan has been combined with the distributed statistical model checker <a href="http://sysma.imtlucca.it/tools/multivesta/">MultiVeStA</a> to perform efficient quantitative analyses, including questions like:</p>
 
 <ul>
