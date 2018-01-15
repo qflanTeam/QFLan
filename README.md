@@ -5,8 +5,9 @@ A framework for quantitative modeling and analysis of highly (re)configurable sy
 
 <h1>Quick Links</h1>
 <ul>
- 	<li><a href="https://github.com/qflanTeam/QFLan/wiki">QFLAN main page</a></li>
- 	<li><a href="https://github.com/qflanTeam/QFLan/wiki/Install-QFLan">Install QFLAN</a></li>
+ 	<li><a href="https://github.com/qflanTeam/QFLan/wiki">QFLan main page</a></li>
+ 	<li><a href="https://github.com/qflanTeam/QFLan/wiki/Install-QFLan">Install QFLan</a></li>
+ 	<li><a href="https://github.com/qflanTeam/QFLan/wiki/Publications">Publications</a></li>
  	<li><a href="https://github.com/qflanTeam/QFLan/wiki/Sample-models">Sample models</a></li>
 </ul>
 
