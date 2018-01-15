@@ -45,7 +45,9 @@ For further information please visit <a href="https://github.com/qflanTeam/QFLan
 <h1>About</h1>
 For suggestions, remarks, bugs or requests please do not hesitate to contact any of us (in alphabetical order):
 
-maurice.terbeek@isti.cnr.it
-axel.legay@inria.fr
-albl@dtu.dk
-anvan@dtu.dk
+<ul>
+ 	<li>axel.legay@inria.fr</li>
+ 	<li>albl@dtu.dk</li>
+ 	<li>maurice.terbeek@isti.cnr.it</li>
+  <li>anvan@dtu.dk</li>
+</ul>
