@@ -3,6 +3,9 @@ A framework for quantitative modeling and analysis of highly (re)configurable sy
 
 <img class=" alignright" src="https://github.com/qflanTeam/QFLan/blob/master/logo.png" alt="QFLAN" width="200" height="184" />
 
+<h1>Please visit <a href="https://github.com/qflanTeam/QFLan/wiki">QFLAN main page</a>.</h1>
+
+<!--
 <h1>Quick Links</h1>
 <ul>
  	<li><a href="https://github.com/qflanTeam/QFLan/wiki">QFLan main page</a></li>
@@ -12,7 +15,7 @@ A framework for quantitative modeling and analysis of highly (re)configurable sy
  	<li><a href="https://github.com/qflanTeam/QFLan/wiki/Sample-models">Sample models</a></li>
  	<li><a href="https://github.com/qflanTeam/QFLan/wiki/Source-code">Source code</a></li>
 </ul>
-
+-->
 
 
 
