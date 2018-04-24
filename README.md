@@ -21,7 +21,7 @@ A framework for quantitative modeling and analysis of highly (re)configurable sy
 
 <h1>Summary</h1>
 <p style="text-align: justify;"><em>QFLan</em> is a software tool for the modeling and analysis of highly reconfigurable systems, including software product lines.</p>
-<p style="text-align: justify;">The tool offers an easy-to-use, rule-based probabilistic language to specify models with probabilistic behaviour. Quantitative constraints can be used to restrict the class of admissible configurations (or products), like (using a family of reconfigurable vending machines from <a href="https://www.dropbox.com/s/tdclnizprfytpg0/fm18%2Btool.pdf?dl=1">here</a>):
+<p style="text-align: justify;">The tool offers an easy-to-use, rule-based probabilistic language to specify models with probabilistic behaviour. Quantitative constraints can be used to restrict the class of admissible configurations (or products), like (using a family of reconfigurable vending machines from <a href="https://www.dropbox.com/s/zu6o0sbu21m2ti5/fm18.pdf?dl=1">here</a>):
 </p>
 
 <ul>
