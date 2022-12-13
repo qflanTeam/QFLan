@@ -1,0 +1,36 @@
+
+begin init
+  	installedFeatures = {
+  		Parking ,
+ 		AntiPrank ,
+  		Empty ,
+  		Executive ,
+  		OpenIfIdle ,
+  	    Overload ,
+  	    //Parking ,
+  	    QuickClose ,
+  	    Shuttle, 
+  	    AlmostFull
+  	}
+  	//initialProcess = Start
+  	initialProcesses = LiftProc | ControllerProc | ButtonsProc | PeopleProc 
+end init
+ 
+/* 
+begin simulate
+	seed = 1 
+	steps = 10
+	file = "./simulation.txt"
+end simulate
+*/
+
+begin analysis
+  	query = eval from 1 to 500 by 1 : {floor}
+  	default delta =0.1
+  	alpha = 0.1
+  	parallelism = 1
+  	simulations block = 25
+  	intermediate results = 10
+end analysis
+
+end model

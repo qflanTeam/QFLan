@@ -1,0 +1,200 @@
+ begin variables
+  deploys = 0
+  trashed = 0
+ end variables
+ begin abstract features
+  Bike 
+  Wheels Energy CompUnit Frame 
+  Tablet
+ end abstract features
+ 
+ begin concrete features
+  AllYear Summer Winter
+  Light
+  Dynamo Battery
+  Engine
+  MapsApp NaviApp GuideApp Music
+  GPS
+  Basket
+  Diamond StepThru
+ end concrete features
+ 
+ begin feature diagram
+  Bike -> {Wheels , ?Light , ?Energy , ?Engine , ?CompUnit , ?Basket , Frame /*, Trashed, FirstDeploy*/}
+  Wheels -XOR-> {AllYear , Summer , Winter}
+  Energy -OR-> { Dynamo , Battery }
+  CompUnit -> { ?Tablet , ?GPS }
+  Frame -XOR-> { Diamond , StepThru}
+  Tablet -> { ?MapsApp , ?NaviApp , ?GuideApp , ?Music}
+ end feature diagram
+ 
+ begin cross-tree constraints
+   ////////////////////////////////////////////////////
+  ////Feature constraints from the Feature Diagram////
+  ////////////////////////////////////////////////////
+ 	//One Wheels and one frame
+ 	//The relation 'Wheels -XOR-> {AllYear , Summer , Winter}' expresses:
+ 	//alternative{AllYear,Summer,Winter}//preciselyOne {AllYear,Summer,Winter}
+ 	//The relation 'Frame -XOR-> { Diamond , StepThru }' expresses:
+ 	//alternative{Diamond,StepThru} //preciselyOne {Diamond,StepThru}
+ 	//The relation 'Energy -OR-> { Dynamo , Battery }' expresses:
+ 	//atLeastOne {Dynamo,Battery}
+ 	
+ 	//Engine needs battery
+ 	Engine requires Battery
+ 	
+ 	//ComputingUnit requires battery
+ 	/*MapsApp requires Battery
+ 	NaviApp requires Battery
+ 	GuideApp requires Battery
+ 	Music requires Battery
+ 	GPS requires Battery*/
+ 	CompUnit requires Battery
+ 	
+ 	//Light requires either Battery or Dynamo	
+ 	//(Light requires Battery or Light requires Dynamo)
+ 	Light requires Energy
+ 	
+ 	NaviApp requires MapsApp
+ 	//Either GPS or Diamond
+ 	GPS excludes Diamond
+ 
+ end cross-tree constraints
+ 
+  begin feature predicates
+  price  = {AllYear=100 , Summer = 70 , Winter = 80 , Light = 15 , Dynamo = 40 , Battery = 150 , Engine = 300 , MapsApp = 10 , NaviApp = 20 , GuideApp = 10 , Music = 10 , GPS = 20 , Basket = 8 , Diamond = 100 , StepThru = 90} 
+  weight = {AllYear=0.3 , Summer = 0.2 , Winter = 0.4 , Light = 0.1 , Dynamo = 0.1 , Battery = 3 , Engine = 10 , Basket = 0.5 , Diamond = 5 , StepThru = 3.5}
+  load   = {MapsApp = 25 , NaviApp = 55 , GuideApp = 30 , Music = 5 , GPS = 10}
+ end feature predicates
+ 
+ begin quantitative constraints
+  ////////////////////////////////
+  ////Quantitative constraints////
+  ////////////////////////////////
+	//Whatever you install, the bike must respect a maximum price, weight and load
+	{ price(Bike) < 800 } //600
+ 	{ weight(Bike) < 20 } //15
+ 	{ load(Bike) <= 100  }
+ 
+ end quantitative constraints 
+ begin actions
+  sell irreparable maintain book stop breakAction start assistance deploy
+ end actions
+ begin action constraints
+ 
+  //////////////////////////
+  ////Action Constraints////
+  //////////////////////////
+ 	//The factory sells bikes having at least a minimum price (so to cover other expenses). Disequations have to be enclosed in curly brackets
+ 	do(sell) -> { price(Bike) > 250 } 
+ 	//Bikes are trashed only if they cost less than 400 euros
+ 	do(irreparable) -> { price(Bike) < 400 }
+ 	//In order to listen music, to use an app or to turn on light you need to have it. These constraints are already builtin
+	//( do(GPS) -> has(GPS))
+	//( do(MapsApp) -> has(MapsApp))
+	//( do(NaviApp) -> has(NaviApp))
+	//( do(GuideApp) -> has(GuideApp))
+	//( do(Music) -> has(Music))
+	//( do(Light) -> has(Light))
+ end action constraints
+ 
+ begin processes
+  process factory = ( factoryInstallFeatures + ( sell , 8 ) . deposit)
+  process factoryInstallFeatures = 
+  		//install optional features
+		(install(GPS) , 6) . factory + 
+		(install(MapsApp) , 10) . factory + 
+		(install(NaviApp) , 6) . factory + 
+		(install(GuideApp) , 3) . factory + 
+		(install(Music) , 20) . factory + 
+		(install(Engine) , 4) . factory + 
+		(install(Battery) , 4) . factory + 
+		(install(Dynamo) , 10) . factory + 
+		(install(Light) , 10) . factory + 
+		(install(Basket) , 8) . factory + 
+		//replace mandatory exclusive features
+		(replace(AllYear,Summer) , 5) . factory + 
+		(replace(AllYear,Winter) , 5) . factory + 
+		(replace(Summer,AllYear) , 10) . factory + 
+		(replace(Summer,Winter) , 5) . factory + 
+		(replace(Winter,Summer) , 5) . factory + 
+		(replace(Winter,AllYear) , 10) . factory + 
+		(replace(Diamond,StepThru) , 3) . factory + 
+		(replace(StepThru,Diamond) , 3) . factory  
+
+  process deposit = depositUpdateFeatures + ( deploy , 10.0 , {deploys = (deploys + 1)} ) . parked  
+  process depositUpdateFeatures = 
+  		// install optional features
+  		( install(GPS) , 6.0 ) . deposit +
+      	( install(MapsApp)  , 10.0 ) . deposit +
+      	( install(NaviApp)  , 6.0 ) . deposit +
+      	( install(GuideApp) , 3.0 ) . deposit +
+      	( install(Music)    , 20.0 ) . deposit +
+      	( install(Engine)   , 4.0 ) . deposit +
+      	( install(Battery)  , 4.0 ) . deposit +
+      	( install(Dynamo)   , 10.0 ) . deposit +
+      	( install(Light)    , 10.0 ) . deposit +
+      	( install(Basket)   , 8.0 ) . deposit +
+      	// uninstall optional features
+      	( uninstall(GPS)      , 6.0 ) . deposit +
+      	( uninstall(MapsApp)  , 10.0 ) . deposit +
+      	( uninstall(NaviApp)  , 6.0 ) . deposit +
+      	( uninstall(GuideApp) , 3.0 ) . deposit +
+      	( uninstall(Music)    , 20.0 ) . deposit +
+      	( uninstall(Engine)   , 1.0 ) . deposit +
+      	( uninstall(Battery)  , 2.0 ) . deposit +
+      	( uninstall(Dynamo)   , 3.0 ) . deposit +
+      	( uninstall(Light)    , 10.0 ) . deposit +
+      	( uninstall(Basket)   , 8.0 ) . deposit +
+      	// replace mandatory exclusive features (Frame cannot be changed).
+      	( replace(AllYear,Summer) , 5.0 ) . deposit +
+      	( replace(AllYear,Winter) , 5.0 ) . deposit +
+      	( replace(Summer,AllYear) , 10.0 ) . deposit +
+      	( replace(Summer,Winter)  , 5.0 ) . deposit +
+      	( replace(Winter,Summer)  , 5.0 ) . deposit +
+      	( replace(Winter,AllYear) , 10.0 ) . deposit +
+      	// replace battery with dynamo, in case the battery is not used (no features requiring it are installed)
+      	( replace(Battery,Dynamo)  , 1.0 ) . deposit
+  
+  process parked = ( book , 10.0 ) . moving + ( maintain , 1.0 ) . deposit
+  
+  process moving = ( stop , 5.0 ) . halted + ( breakAction , 1.0 ) . broken + ( Music , 20.0 ) . moving + ( Light , 20.0 ) . moving
+  
+  process halted = (start , 5) . moving + (breakAction , 1) . broken + (Music , 20) . halted + (GPS , 10) . halted + (GuideApp , 10) . halted + (MapsApp , 10) . halted +  (NaviApp , 10) . halted +  (Light , 10) . halted
+ 
+  process broken = ( assistance , 10.0 ) . deposit + ( irreparable , 1.0 , {trashed = 1} ) . nil
+ end processes
+ 
+ begin init
+  installedFeatures = { Diamond , AllYear }
+  initialProcess = factory
+ end init
+ 
+ /*
+ begin simulate 
+  seed = 1
+  steps = 15
+  file = "./output1.txt"
+ end simulate
+*/
+ 
+begin analysis
+/*
+ query = eval when {deploys>0} :
+{price(Bike)[delta=20],weight(Bike)[delta=1.0],load(Bike)[delta=5],
+AllYear,Summer, Winter, GPS,MapsApp,NaviApp,GuideApp,Music,Diamond,StepThru,Battery,Dynamo,Engine,Basket,Light
+}*/
+ query = eval from 1 to 500 by 30 :
+{price(Bike)[delta=20],weight(Bike)[delta=1.0],load(Bike)[delta=5],
+AllYear,Summer, Winter, GPS,MapsApp,NaviApp,GuideApp,Music,Diamond,StepThru,Battery,Dynamo,Engine,Basket,Light
+}
+/*
+ query = eval from 1 to 500 by 30 :
+{
+1-AllYear,1-Summer,1-Winter,1-GPS,1-MapsApp,1-NaviApp,1-GuideApp,1-Music,1-Diamond,1-StepThru,1-Battery,1-Dynamo,1-Engine,1-Basket,1-Light
+}*/
+ default delta=0.1
+ alpha = 0.1
+ parallelism = 1
+ end analysis  
+end model

@@ -1,0 +1,7 @@
+open "run configurations"
+in arguments write: -Djava.library.path=/home/andrea/Copy/TOOLSMT/Z3/java/z3/build/
+
+in Environment add a new variable with name LD_LIBRARY_PATH and value /home/andrea/Copy/TOOLSMT/Z3/java/z3/build/
+
+
+./lib is fine as well!

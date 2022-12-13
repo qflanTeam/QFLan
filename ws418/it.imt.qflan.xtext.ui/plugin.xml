@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+	<extension
+		point="org.eclipse.ui.editors">
+		<editor
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.XtextEditor"
+			contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+			default="true"
+			extensions="qflan"
+			icon="icons/minilogo.jpg"
+			id="it.imt.QFLan"
+			name="QFLan Editor">
+		</editor>
+	</extension>
+	<extension
+		point="org.eclipse.ui.handlers">
+		<handler
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclarationHandler"
+			commandId="org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclaration">
+			<activeWhen>
+				<reference
+					definitionId="it.imt.QFLan.Editor.opened">
+				</reference>
+			</activeWhen>
+		</handler>
+		<handler
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.handler.ValidateActionHandler"
+			commandId="it.imt.QFLan.validate">
+		<activeWhen>
+			<reference
+					definitionId="it.imt.QFLan.Editor.opened">
+			</reference>
+		</activeWhen>
+		</handler>
+		<!-- copy qualified name -->
+		<handler
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedNameHandler"
+			commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName">
+			<activeWhen>
+				<reference definitionId="it.imt.QFLan.Editor.opened" />
+			</activeWhen>
+		</handler>
+		<handler
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedNameHandler"
+			commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedName">
+			<activeWhen>
+				<and>
+					<reference definitionId="it.imt.QFLan.XtextEditor.opened" />
+					<iterate>
+						<adapt type="org.eclipse.xtext.ui.editor.outline.IOutlineNode" />
+					</iterate>
+				</and>
+			</activeWhen>
+		</handler>
+	</extension>
+	<extension point="org.eclipse.core.expressions.definitions">
+		<definition id="it.imt.QFLan.Editor.opened">
+			<and>
+				<reference definitionId="isActiveEditorAnInstanceOfXtextEditor"/>
+				<with variable="activeEditor">
+					<test property="org.eclipse.xtext.ui.editor.XtextEditor.languageName" 
+						value="it.imt.QFLan" 
+						forcePluginActivation="true"/>
+				</with>		
+			</and>
+		</definition>
+		<definition id="it.imt.QFLan.XtextEditor.opened">
+			<and>
+				<reference definitionId="isXtextEditorActive"/>
+				<with variable="activeEditor">
+					<test property="org.eclipse.xtext.ui.editor.XtextEditor.languageName" 
+						value="it.imt.QFLan" 
+						forcePluginActivation="true"/>
+				</with>		
+			</and>
+		</definition>
+	</extension>
+	<extension
+			point="org.eclipse.ui.preferencePages">
+		<page
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.preferences.LanguageRootPreferencePage"
+			id="it.imt.QFLan"
+			name="QFLan">
+			<keywordReference id="it.imt.ui.keyword_QFLan"/>
+		</page>
+		<page
+			category="it.imt.QFLan"
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.syntaxcoloring.SyntaxColoringPreferencePage"
+			id="it.imt.QFLan.coloring"
+			name="Syntax Coloring">
+			<keywordReference id="it.imt.ui.keyword_QFLan"/>
+		</page>
+		<page
+			category="it.imt.QFLan"
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage"
+			id="it.imt.QFLan.templates"
+			name="Templates">
+			<keywordReference id="it.imt.ui.keyword_QFLan"/>
+		</page>
+	</extension>
+	<extension
+			point="org.eclipse.ui.propertyPages">
+		<page
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.preferences.LanguageRootPreferencePage"
+			id="it.imt.QFLan"
+			name="QFLan">
+			<keywordReference id="it.imt.ui.keyword_QFLan"/>
+			<enabledWhen>
+				<adapt type="org.eclipse.core.resources.IProject"/>
+			</enabledWhen>
+			<filter name="projectNature" value="org.eclipse.xtext.ui.shared.xtextNature"/>
+		</page>
+	</extension>
+	<extension
+		point="org.eclipse.ui.keywords">
+		<keyword
+			id="it.imt.ui.keyword_QFLan"
+			label="QFLan"/>
+	</extension>
+	<extension
+		point="org.eclipse.ui.commands">
+	<command
+			description="Trigger expensive validation"
+			id="it.imt.QFLan.validate"
+			name="Validate">
+	</command>
+	<!-- copy qualified name -->
+	<command
+			id="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName"
+			categoryId="org.eclipse.ui.category.edit"
+			description="Copy the qualified name for the selected element"
+			name="Copy Qualified Name">
+	</command>
+	<command
+			id="org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedName"
+			categoryId="org.eclipse.ui.category.edit"
+			description="Copy the qualified name for the selected element"
+			name="Copy Qualified Name">
+	</command>
+	</extension>
+	<extension point="org.eclipse.ui.menus">
+		<menuContribution
+			locationURI="popup:#TextEditorContext?after=group.edit">
+			 <command
+				 commandId="it.imt.QFLan.validate"
+				 style="push"
+				 tooltip="Trigger expensive validation">
+			<visibleWhen checkEnabled="false">
+				<reference
+					definitionId="it.imt.QFLan.Editor.opened">
+				</reference>
+			</visibleWhen>
+		</command>  
+		</menuContribution>
+		<!-- copy qualified name -->
+		<menuContribution locationURI="popup:#TextEditorContext?after=copy">
+			<command commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName" 
+				style="push" tooltip="Copy Qualified Name">
+				<visibleWhen checkEnabled="false">
+					<reference definitionId="it.imt.QFLan.Editor.opened" />
+				</visibleWhen>
+			</command>  
+		</menuContribution>
+		<menuContribution locationURI="menu:edit?after=copy">
+			<command commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName"
+				style="push" tooltip="Copy Qualified Name">
+				<visibleWhen checkEnabled="false">
+					<reference definitionId="it.imt.QFLan.Editor.opened" />
+				</visibleWhen>
+			</command>  
+		</menuContribution>
+		<menuContribution locationURI="popup:org.eclipse.xtext.ui.outline?after=additions">
+			<command commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedName" 
+				style="push" tooltip="Copy Qualified Name">
+				<visibleWhen checkEnabled="false">
+					<and>
+						<reference definitionId="it.imt.QFLan.XtextEditor.opened" />
+						<iterate>
+							<adapt type="org.eclipse.xtext.ui.editor.outline.IOutlineNode" />
+						</iterate>
+					</and>
+				</visibleWhen>
+			</command>
+		</menuContribution>
+	</extension>
+	<extension point="org.eclipse.ui.menus">
+		<menuContribution locationURI="popup:#TextEditorContext?endof=group.find">
+			<command commandId="org.eclipse.xtext.ui.editor.FindReferences">
+				<visibleWhen checkEnabled="false">
+					<reference definitionId="it.imt.QFLan.Editor.opened">
+					</reference>
+				</visibleWhen>
+			</command>
+		</menuContribution>
+	</extension>
+	<extension point="org.eclipse.ui.handlers">
+		<handler
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.findrefs.FindReferencesHandler"
+			commandId="org.eclipse.xtext.ui.editor.FindReferences">
+			<activeWhen>
+				<reference
+					definitionId="it.imt.QFLan.Editor.opened">
+				</reference>
+			</activeWhen>
+		</handler>
+	</extension>
+	<!-- adding resource factories -->
+	<extension
+		point="org.eclipse.emf.ecore.extension_parser">
+		<parser
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.resource.IResourceFactory"
+			type="qflan">
+		</parser>
+	</extension>
+	<extension point="org.eclipse.xtext.extension_resourceServiceProvider">
+	    <resourceServiceProvider
+	        class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.resource.IResourceUIServiceProvider"
+	        uriExtension="qflan">
+	    </resourceServiceProvider>
+	</extension>
+	<!-- marker definitions for it.imt.QFLan -->
+	<extension
+			id="qflan.check.fast"
+			name="QFLan Problem"
+			point="org.eclipse.core.resources.markers">
+		<super type="org.eclipse.xtext.ui.check.fast"/>
+		<persistent value="true"/>
+	</extension>
+	<extension
+			id="qflan.check.normal"
+			name="QFLan Problem"
+			point="org.eclipse.core.resources.markers">
+		<super type="org.eclipse.xtext.ui.check.normal"/>
+		<persistent value="true"/>
+	</extension>
+	<extension
+			id="qflan.check.expensive"
+			name="QFLan Problem"
+			point="org.eclipse.core.resources.markers">
+		<super type="org.eclipse.xtext.ui.check.expensive"/>
+		<persistent value="true"/>
+	</extension>
+	<extension point="org.eclipse.xtext.builder.participant">
+		<participant
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.builder.IXtextBuilderParticipant"
+			fileExtensions="qflan"/>
+	</extension>
+	<extension point="org.eclipse.ui.preferencePages">
+		<page
+			category="it.imt.QFLan"
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.builder.preferences.BuilderPreferencePage"
+			id="it.imt.QFLan.compiler.preferencePage"
+			name="Compiler">
+			<keywordReference id="it.imt.ui.keyword_QFLan"/>
+		</page>
+	</extension>
+	<extension point="org.eclipse.ui.propertyPages">
+		<page
+			category="it.imt.QFLan"
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.builder.preferences.BuilderPreferencePage"
+			id="it.imt.QFLan.compiler.propertyPage"
+			name="Compiler">
+			<keywordReference id="it.imt.ui.keyword_QFLan"/>
+			<enabledWhen>
+				<adapt type="org.eclipse.core.resources.IProject"/>
+			</enabledWhen>
+			<filter name="projectNature" value="org.eclipse.xtext.ui.shared.xtextNature"/>
+		</page>
+	</extension>
+	<extension point="org.eclipse.ui.menus">
+		<menuContribution locationURI="popup:#TextEditorContext?after=xtext.ui.openDeclaration">
+			<command
+				commandId="org.eclipse.xtext.ui.OpenGeneratedFileCommand"
+				id="it.imt.QFLan.OpenGeneratedCode"
+				style="push">
+				<visibleWhen checkEnabled="false">
+					<reference definitionId="it.imt.QFLan.Editor.opened" />
+				</visibleWhen>
+			</command>
+		</menuContribution>
+	</extension>
+	<extension point="org.eclipse.ui.handlers">
+		<handler
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.generator.trace.OpenGeneratedFileHandler"
+			commandId="org.eclipse.xtext.ui.OpenGeneratedFileCommand">
+			<activeWhen>
+				<reference definitionId="it.imt.QFLan.Editor.opened" />
+			</activeWhen>
+		</handler>
+	</extension>
+	<!-- Quick Outline -->
+	<extension
+		point="org.eclipse.ui.handlers">
+		<handler 
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.outline.quickoutline.ShowQuickOutlineActionHandler"
+			commandId="org.eclipse.xtext.ui.editor.outline.QuickOutline">
+			<activeWhen>
+				<reference
+					definitionId="it.imt.QFLan.Editor.opened">
+				</reference>
+			</activeWhen>
+		</handler>
+	</extension>
+	<extension
+		point="org.eclipse.ui.commands">
+		<command
+			description="Open the quick outline."
+			id="org.eclipse.xtext.ui.editor.outline.QuickOutline"
+			name="Quick Outline">
+		</command>
+	</extension>
+	<extension point="org.eclipse.ui.menus">
+		<menuContribution
+			locationURI="popup:#TextEditorContext?after=group.open">
+			<command commandId="org.eclipse.xtext.ui.editor.outline.QuickOutline"
+				style="push"
+				tooltip="Open Quick Outline">
+				<visibleWhen checkEnabled="false">
+					<reference definitionId="it.imt.QFLan.Editor.opened"/>
+				</visibleWhen>
+			</command>
+		</menuContribution>
+	</extension>
+	<!-- quickfix marker resolution generator for it.imt.QFLan -->
+	<extension
+	        point="org.eclipse.ui.ide.markerResolution">
+	    <markerResolutionGenerator
+	        class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
+	        markerType="it.imt.qflan.xtext.ui.qflan.check.fast">
+	        <attribute
+	            name="FIXABLE_KEY"
+	            value="true">
+	        </attribute>
+	    </markerResolutionGenerator>
+	    <markerResolutionGenerator
+	        class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
+	        markerType="it.imt.qflan.xtext.ui.qflan.check.normal">
+	        <attribute
+	            name="FIXABLE_KEY"
+	            value="true">
+	        </attribute>
+	    </markerResolutionGenerator>
+	    <markerResolutionGenerator
+	        class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
+	        markerType="it.imt.qflan.xtext.ui.qflan.check.expensive">
+	        <attribute
+	            name="FIXABLE_KEY"
+	            value="true">
+	        </attribute>
+	    </markerResolutionGenerator>
+	</extension>
+	<!-- Rename Refactoring -->
+	<extension point="org.eclipse.ui.handlers">
+		<handler 
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.DefaultRenameElementHandler"
+			commandId="org.eclipse.xtext.ui.refactoring.RenameElement">
+			<activeWhen>
+				<reference
+					definitionId="it.imt.QFLan.Editor.opened">
+				</reference>
+			</activeWhen>
+		</handler>
+	</extension>
+	<extension point="org.eclipse.ui.menus">
+		<menuContribution
+			locationURI="popup:#TextEditorContext?after=group.edit">
+			<command commandId="org.eclipse.xtext.ui.refactoring.RenameElement"
+				style="push">
+				<visibleWhen checkEnabled="false">
+					<reference
+						definitionId="it.imt.QFLan.Editor.opened">
+					</reference>
+				</visibleWhen>
+			</command>
+		</menuContribution>
+	</extension>
+	<extension point="org.eclipse.ui.preferencePages">
+		<page
+			category="it.imt.QFLan"
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.RefactoringPreferencePage"
+			id="it.imt.QFLan.refactoring"
+			name="Refactoring">
+			<keywordReference id="it.imt.ui.keyword_QFLan"/>
+		</page>
+	</extension>
+	<extension point="org.eclipse.compare.contentViewers">
+		<viewer id="it.imt.QFLan.compare.contentViewers"
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
+			extensions="qflan">
+		</viewer>
+	</extension>
+	<extension point="org.eclipse.compare.contentMergeViewers">
+		<viewer id="it.imt.QFLan.compare.contentMergeViewers"
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
+			extensions="qflan" label="QFLan Compare">
+		</viewer>
+	</extension>
+	<extension point="org.eclipse.ui.editors.documentProviders">
+		<provider id="it.imt.QFLan.editors.documentProviders"
+			class="it.imt.ui.QFLanExecutableExtensionFactory:org.eclipse.xtext.ui.editor.model.XtextDocumentProvider"
+			extensions="qflan">
+		</provider>
+	</extension>
+	<extension point="org.eclipse.team.core.fileTypes">
+		<fileTypes
+			extension="qflan"
+			type="text">
+		</fileTypes>
+	</extension>
+	
+		<!-- ADDED -->
+	<extension
+       point="org.eclipse.ui.perspectives">
+    <perspective
+          class="it.imt.ui.perspective.PerspectiveFactory1"
+          icon="icons/minilogo.jpg"
+          id="QFLANPerspective.perspective1"
+          name="QFLan">
+    </perspective>
+ </extension>	
+ <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="QFLANPerspective.perspective1">
+            <view
+                  id="org.eclipse.ui.navigator.ProjectExplorer"
+                  minimized="false"
+                  ratio="0.1"
+                  relationship="left"
+                  relative="org.eclipse.ui.editorss"
+                  visible="true">
+            </view>
+            <view
+                  closeable="true"
+                  id="org.eclipse.ui.views.ContentOutline"
+                  minimized="false"
+                  relationship="right"
+                  relative="org.eclipse.ui.editorss"
+                  visible="true">
+            </view>
+            <view
+                  id="org.eclipse.ui.console.ConsoleView"
+                  minimized="false"
+                  moveable="false"
+                  relationship="bottom"
+                  relative="org.eclipse.ui.editorss"
+                  visible="true">
+            </view>
+            <view
+                  closeable="false"
+                  id="org.eclipse.ui.views.ProblemView"
+                  minimized="false"
+                  relationship="stack"
+                  relative="org.eclipse.ui.console.ConsoleView"
+                  visible="true">
+            </view>
+             <newWizardShortcut
+                  id="it.imt.ui.wizardNewProject">
+            </newWizardShortcut>
+            <newWizardShortcut
+                  id="it.imt.ui.wizardNewFile">
+            </newWizardShortcut>
+      </perspectiveExtension>
+   </extension>
+	<extension
+       point="org.eclipse.ui.views">
+    <view
+          allowMultiple="true"
+          class="it.imt.ui.perspective.plot.PlotView"
+          icon="icons/chartFlippedScaled.png"
+          id="it.imt.qflan.ui.perspective.plot.PlotView"
+          name="PlotView"
+          restorable="false">
+    </view>
+ </extension>
+ <extension
+       point="org.eclipse.ui.newWizards">
+    <category
+          id="it.imt.ui.categoryqflan"
+          name="QFLan">
+    </category>
+    <wizard
+          category="it.imt.ui.categoryqflan"
+          class="it.imt.ui.perspective.wizards.NewQFLanFileWizard"
+          finalPerspective="QFLANPerspective.perspective1"
+          icon="icons/minilogo.jpg"
+          id="it.imt.ui.wizardNewFile"
+          name="QFLan file"
+          project="false">
+    </wizard>
+    <wizard
+          category="it.imt.ui.categoryqflan"
+          class="it.imt.ui.perspective.wizards.NewQFLanProjectWizard"
+          finalPerspective="QFLANPerspective.perspective1"
+          icon="icons/minilogo.jpg"
+          id="it.imt.ui.wizardNewProject"
+          name="QFLan project"
+          project="true">
+    </wizard>
+    -->
+    <!--<wizard
+          category="it.imt.ui.categoryqflan"
+          class="it.imt.ui.newWizards.RunMultiVeStAAnalysis"
+          id="it.imt.ui.wizardNewFile"
+          name="Run MultiVeStA analysis"
+          project="false">
+    </wizard>-->
+ </extension>
+ <extension
+       point="org.eclipse.ui.startup">
+    <startup
+          class="it.imt.ui.perspective.StartupHook">
+    </startup>
+ </extension>
+ <extension
+       point="org.eclipse.ui.handlers">
+    <handler
+          class="it.imt.ui.QFLanExecutableExtensionFactory:it.imt.ui.handler.RunHandler"
+          commandId="it.imt.ui.handler.commandexecute">
+    </handler>
+    <handler
+          class="it.imt.ui.QFLanExecutableExtensionFactory:it.imt.ui.handler.RunHandlerFromPackageExplorer"
+          commandId="it.imt.ui.handler.commandexecutefrompackageexplorer2">
+    </handler>
+ </extension>
+  <extension
+       point="org.eclipse.ui.commands">
+    <command
+          id="it.imt.ui.handler.commandexecute"
+          name="Run MultiVeStA analysis">
+    </command>
+    <command
+          id="it.imt.ui.handler.commandexecutefrompackageexplorer2"
+          name="Run MultiVeStA analysis on selected model">
+    </command>
+ </extension>
+  <extension
+       point="org.eclipse.ui.menus">
+    <menuContribution
+          allPopups="false"
+          locationURI="toolbar:org.eclipse.ui.main.toolbar">
+       <toolbar
+             id="it.imt.ui.maintoolbar">
+          <command
+                commandId="it.imt.ui.handler.commandexecute"
+                icon="icons/m.jpg"
+                style="push"
+                tooltip="Run MultiVeStA analysis">
+          </command>
+       </toolbar>
+    </menuContribution>
+ </extension>
+ 
+ 
+ <extension point="org.eclipse.ui.menus">
+    <menuContribution locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+        <command
+            commandId="it.imt.ui.handler.commandexecutefrompackageexplorer2"
+            style="push">
+            <visibleWhen
+                  checkEnabled="false">
+                  <iterate>
+       <adapt type="org.eclipse.core.resources.IResource">
+          <test property="org.eclipse.core.resources.name" 
+                value="*.qflan"/>
+       </adapt>
+    </iterate>
+            </visibleWhen>
+        </command>
+    </menuContribution>
+    </extension>
+ 
+  <extension
+       point="org.eclipse.ui.navigator.navigatorContent">
+    <commonWizard
+          type="new"
+          wizardId="it.imt.ui.wizardNewFile">
+       <enablement></enablement>
+    </commonWizard>
+    <commonWizard
+          type="new"
+          wizardId="it.imt.ui.wizardNewProject">
+       <enablement></enablement>
+    </commonWizard>
+ </extension>   
+</plugin>

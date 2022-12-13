@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="it.imt.qflan.platform.linux64.feature"
+      label="QFLan: LINUX64-DEPENDENT DEPENDENCIES FOR DEPLOYMENT"
+      version="1.0.0.qualifier"
+      provider-name="Sant&apos;Anna School of Advanced Studies Pisa, Italy"
+      plugin="it.imt.qflan.product">
+
+   <description url="http://www.example.com/description">
+      QFLan: Analysis of probabilistic models of Software Product Lines
+with Quantitative Constraints -
+LINUX64-DEPENDENT DEPENDENCIES FOR DEPLOYMENT
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <plugin
+         id="org.eclipse.equinox.launcher.gtk.linux.x86_64"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"/>
+
+   <plugin
+         id="org.eclipse.swt.gtk.linux.x86_64"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="it.imt.qflan.product.linux64"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

@@ -1,0 +1,7 @@
+//TODO:
+//Allow user to write the query of interest, and provide some predefined parametric queries
+//
+//In the grammar:
+//	Spot some errors: sets of features, etc
+//	Improve outline
+//	Try to understand why we have to uses curly brackets in DisequationOfPredicateExpr

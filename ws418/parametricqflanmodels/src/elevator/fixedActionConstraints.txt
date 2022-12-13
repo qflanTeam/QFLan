@@ -1,0 +1,39 @@
+	do(close) -> ({ door == 1 }
+   				//and (has(Parking) implies ! { direction == 0 } )
+   				and ((has(Parking) and {floor==0}) implies ! { direction == 0 } )
+   				and (has(Overload) implies { load <= maxLoad } )
+   	)
+
+   	do(up)    -> ({ direction == 1 } and { floor < top } and { door == 0 })
+
+   	do(down)  -> ({ direction == -1} and { floor > bottom } and { door == 0 })
+
+   	do(startUp) -> { floor < goal }
+
+   	do(startDown) -> {floor > goal }
+
+   	do(keepDir) -> (
+   		has(Shuttle)
+   	    or  ({ floor < goal } and { direction == 1})
+   	    or  ({ floor > goal } and { direction == -1})
+   	    )
+
+   	do(reverse) -> (
+   				has(Shuttle) and
+   			   ({ floor == top} or { floor == bottom }) 
+                )
+
+ 	do(clean) -> ( has(Empty) and { load==0 } )
+
+    do(pressL) -> { load > 0 }
+
+    do(pressF) -> true
+
+ 	do(unpressL) -> has(AntiPrank)
+
+  	do(unpressF) -> has(AntiPrank)
+
+    do(enter) -> ({ door == 1 } and { load < capacity })
+
+    //do(leave) -> ({ door == 1 } and { capacity > 0})
+    do(leave) -> ({ door == 1 } and { load > 0})

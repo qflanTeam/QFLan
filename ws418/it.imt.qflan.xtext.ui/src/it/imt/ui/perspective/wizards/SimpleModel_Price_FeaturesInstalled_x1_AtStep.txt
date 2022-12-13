@@ -1,0 +1,6 @@
+ProductObsAtStep(numberOfStep,obs_S) =
+ if { s.rval("steps") >= numberOfStep }
+	then { s.rval(obs_S) }
+	else # ProductObsAtStep({numberOfStep},{obs_S})
+ fi ;
+eval parametric(E[ ProductObsAtStep(x,{"price"}) ],E[ ProductObsAtStep(x,{"af1"}) ],E[ ProductObsAtStep(x,{"af2"}) ],E[ ProductObsAtStep(x,{"cf1"}) ],E[ ProductObsAtStep(x,{"cf2"}) ],E[ ProductObsAtStep(x,{"cf3"}) ],E[ ProductObsAtStep(x,{"cf4"}) ],E[ ProductObsAtStep(x,{"cf5"}) ],E[ ProductObsAtStep(x,{"x1"}) ],x,0.0,5.0,100.0) ;

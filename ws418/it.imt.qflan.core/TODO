@@ -1,0 +1,121 @@
+Quando ti chiede il jar: non continuare all'infinito se non ti ha dato il jar. Ma termina e basta. 
+Quando crei un file con i wizard: rendi il nome maiuscolo automaticamente
+
+Cambi a DTU:
+has(ConcreteFeature) -> has(Feature)
+
+Altri check sintattici da fare sul modello iniziale?
+2) nella simulazione non mostro i constraint. Solo processo attuale e feaure instalalte, incluso quelle concrete
+
+
+TODO
+	The efficient (log(number of commitments)) di getAllowedCommitment non funziona. L'ho sostituito con uno lineare...
+	Guarda se ho creato problemi nella generazione della query quando ho introdotto: 
+		ConditionOfQuery
+		DisequationOfPredicateExprForConditionOfQuery
+	multivesta is slow with many queries
+	non e' do(leave) -> ({ door == 1 } and { capacity > 0}), ma: do(leave) -> ({ door == 1 } and { load > 0})
+	formule 'until'
+	'steps' nelle condizioni delle queries. Quindi non saranno piu' constraints.
+	Eccezioni da gestire:
+		java.net.BindException: Address already in use
+	at java.net.PlainSocketImpl.socketBind(Native Method)
+	at java.net.AbstractPlainSocketImpl.bind(AbstractPlainSocketImpl.java:382)
+	at java.net.ServerSocket.bind(ServerSocket.java:375)
+	at java.net.ServerSocket.<init>(ServerSocket.java:237)
+	at java.net.ServerSocket.<init>(ServerSocket.java:128)
+	at vesta.NewVesta.launchServers(NewVesta.java:565)
+	at vesta.NewVesta.manageServerList(NewVesta.java:488)
+	at vesta.NewVesta.invokeClient(NewVesta.java:278)
+	at it.imt.ui.handler.MyMultiVeStAAnalysisExecutor.invokeMultiVeStA(MyMultiVeStAAnalysisExecutor.java:1116)
+	at it.imt.ui.handler.MyMultiVeStAAnalysisExecutorWorker.run(MyMultiVeStAAnalysisExecutorWorker.java:89)
+Exception in thread "Thread-129" java.lang.NullPointerException
+	at vesta.NewVesta.launchServers(NewVesta.java:727)
+	at vesta.NewVesta.manageServerList(NewVesta.java:488)
+	at vesta.NewVesta.invokeClient(NewVesta.java:278)
+	at it.imt.ui.handler.MyMultiVeStAAnalysisExecutor.invokeMultiVeStA(MyMultiVeStAAnalysisExecutor.java:1116)
+	at it.imt.ui.handler.MyMultiVeStAAnalysisExecutorWorker.run(MyMultiVeStAAnalysisExecutorWorker.java:89)
+	
+		observation not supported
+		queryfile not present
+		 
+	CORE
+		forward exceptions
+		remove "isAllowed" method of SideEffect? At the moment we apply the side-effects, and we check if we can perform the action.
+		double check addVariableToZ3, because I'm not sure that it works
+		I did not update z3 code for constraints vs actionConstraints
+	
+	GUI
+    	Scrivere sulla console: 	http://www.programcreek.com/java-api-examples/index.php?source_dir=XRobot-master/org.lejos.ev3.ldt/src/main/java/org/lejos/ev3/ldt/LeJOSEV3Plugin.java
+		complete multiquatex editor!
+		create splash.bmp of it.imt.qflan.product in linux
+
+
+
+
+###########################################################################################
+###########################################################################################
+###########################################################################################
+RICHIESTE ALBERTO
+1)Cambiare valori dei feature predicates at runtime
+
+
+2)
+process ChooseGoal =
+    // @Andrea: questo e' in realta' un if_then_else codificato con 
+    // ask ( condition) . P + ask (! condition) . Q
+    // Per me va bene, ma forse vogliamo offrire un if_then_else classico?    
+       (ask(has(Parking) and 
+    	       {buttonL0=0} and {buttonF0=0} and
+    	       {buttonL1=0} and {buttonF0=0} and 
+    	       {buttonL2=0} and {buttonF0=0} and
+    	       {buttonL3=0} and {buttonF0=0} and
+    	       {buttonL4=0} and {buttonF0=0}
+    	       ) , 100 , {goal = 0} ) 
+    	        . ChooseDirection
+    +  (ask(!(has(Parking) and 
+    	       {buttonL0=0} and {buttonF0=0} and
+    	       {buttonL1=0} and {buttonF0=0} and 
+    	       {buttonL2=0} and {buttonF0=0} and
+    	       {buttonL3=0} and {buttonF0=0} and
+    	       {buttonL4=0} and {buttonF0=0}
+    	       )) , 100 ) 
+    	        . ChooseGoalExec
+
+ 
+Quello che non mi piace e' la non-atomicita': la tua ask puo' essere selezionata tra tutte le altre azioni. Poi magari viene eseguito dell'altro, e piu' avanti verra' eseguito il body. Magari, quando viene eseguito il body la condizione che hai guardato con la ask non vale piu'...
+Ma forse sono io che mi preoccupo troppo. In fondo e' proprio quello che succede nella programmazione parallela.
+
+Voi che ne pensate di introdurre un if_then_else per eseguire una certa azione? 
+Una altra soluzione sarebbe di aggiungere il concetto di guardia ai prefissi, passando da 
+<azione,rate,sideeffects>.continuation
+a
+<azione,rate,sideeffects,guard>.continuation
+
+###########################################################################################
+###########################################################################################
+###########################################################################################
+
+
+
+
+	OLD TO CHECK
+		If the chosen commitment does not change the store, keep track of the actions which were allowed in the previous step. Actually, we can in addition keep track of all actions which are not affected by the store modification   
+		Make more efficient the generation of the next state/application of chosen commit (check if I recompute the processes)
+		We have to create features and actions via the model (createNormalAction, createConcreteFeature, createAbstractFeature)
+		n-ary choice
+		n-ary feature/action requires feature (useful e.g. for "all compUnit require the battery")
+
+
+
+NOTES
+	Constraints:
+	- do(...) -> ... are like guards: I execute the action only if the guard is true. This constraint applies on the current store
+	- other constraints are instead checked in the target state (with new features and new variable values), to grant that we end up in a correct state. These constraints apply in the new store
+	- As regards the action ask: I check the question in the current store (before I check if any action constraint forbids to execute this action, and I also check the target store to ensure that the side-effects did not make the store false). The question might not be true in the target store due to the side-effects. ADD A WARINING FOR ASK ASCTIONS WITH NON-EMPTY SIDE-EFFECTS
+	
+
+	I assume that I always have "do(feature) -> has(feature)" (i.e., I can execute a feature only if it is installed)
+	I assume that it is not possible to execute an abstract feature. Only concrete ones can be executed	
+	I assume that "do(feature)" does not actually appear in the store, and can only be used for action constraints
+	When evaluating if an Ask action can be executed I check just if its constraint is valid in the current model

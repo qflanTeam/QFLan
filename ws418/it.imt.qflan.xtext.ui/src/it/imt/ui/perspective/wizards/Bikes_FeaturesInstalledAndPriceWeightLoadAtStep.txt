@@ -1,0 +1,6 @@
+ProductObsAtStep(numberOfStep,obs_S) =
+ if { s.rval("steps") >= numberOfStep }
+	then { s.rval(obs_S) }
+	else # ProductObsAtStep({numberOfStep},{obs_S})
+ fi ;
+eval parametric(E[ ProductObsAtStep(x,{"price"}) ],E[ ProductObsAtStep(x,{"weight"}) ],E[ ProductObsAtStep(x,{"load"}) ],E[ ProductObsAtStep(x,{"AllYear"}) ],E[ ProductObsAtStep(x,{"Summer"}) ],E[ ProductObsAtStep(x,{"Winter"}) ],E[ ProductObsAtStep(x,{"GPS"}) ],E[ ProductObsAtStep(x,{"MapsApp"}) ],E[ ProductObsAtStep(x,{"NaviApp"}) ],E[ ProductObsAtStep(x,{"GuideApp"}) ],E[ ProductObsAtStep(x,{"Music"}) ],E[ ProductObsAtStep(x,{"Diamond"}) ],E[ ProductObsAtStep(x,{"StepThru"}) ],E[ ProductObsAtStep(x,{"Battery"}) ],E[ ProductObsAtStep(x,{"Dynamo"}) ],E[ ProductObsAtStep(x,{"Engine"}) ],E[ ProductObsAtStep(x,{"Basket"}) ],E[ ProductObsAtStep(x,{"Light"}) ],E[ ProductObsAtStep(x,{"trashed"}) ],x,0.0,30.0,500.0) ;

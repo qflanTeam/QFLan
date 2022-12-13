@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.eclipse.ui.ide.workbench"
+            name="QFLan">
+         <property
+               name="appName"
+               value="QFLan">
+         </property>
+         <property
+               name="aboutImage"
+               value="platform:/plugin/it.imt.qflan.product/logo/qflanLogo250.gif">
+         </property>
+         <property
+               name="aboutText"
+               value="QFLan: analysis of probabilistic behavioural models of dynamic software product lines with quantitative constraints">
+         </property>
+         <property
+               name="windowImages"
+               value="platform:/plugin/it.imt.qflan.product/logo/qflanLogo16.gif,platform:/plugin/it.imt.qflan.product/logo/qflanLogo32.gif,platform:/plugin/it.imt.qflan.product/logo/qflanLogo48.gif,platform:/plugin/it.imt.qflan.product/logo/qflanLogo64.gif,platform:/plugin/it.imt.qflan.product/logo/qflanLogo128.gif,platform:/plugin/it.imt.qflan.product/logo/qflanLogo256.gif">
+         </property>
+         <property
+               name="startupProgressRect"
+               value="5,275,445,15">
+         </property>
+         <property
+               name="startupForegroundColor"
+               value="000000">
+         </property>
+         <property
+               name="startupMessageRect"
+               value="7,315,445,20">
+         </property>
+         <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
+         </property>
+      </product>
+   </extension>
+
+</plugin>

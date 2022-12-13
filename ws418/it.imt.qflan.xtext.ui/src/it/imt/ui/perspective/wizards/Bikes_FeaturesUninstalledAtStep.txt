@@ -1,0 +1,6 @@
+ProductObsAtStep(numberOfStep,obs_S) =
+ if { s.rval("steps") >= numberOfStep }
+	then { 1.0 - s.rval(obs_S) }
+	else # ProductObsAtStep({numberOfStep},{obs_S})
+ fi ;
+eval parametric(E[ ProductObsAtStep(x,{"AllYear"}) ],E[ ProductObsAtStep(x,{"Diamond"}) ],E[ ProductObsAtStep(x,{"Battery"}) ],E[ ProductObsAtStep(x,{"Basket"}) ],x,0.0,30.0,500.0) ;

@@ -1,0 +1,6 @@
+FeatureUninstAtStep(numberOfStep,feature_S) =
+ if { s.rval("steps") >= numberOfStep }
+	then { 1.0 - s.rval(feature_S) }
+	else # FeatureUninstAtStep({numberOfStep},{feature_S})
+ fi ;
+eval parametric(E[ FeatureUninstAtStep(x,{"AllYear"}) ],E[ FeatureUninstAtStep(x,{"Diamond"}) ],E[ FeatureUninstAtStep(x,{"Battery"}) ],E[ FeatureUninstAtStep(x,{"Basket"}) ],x,0.0,2.0,500.0) ;

@@ -1,0 +1,108 @@
+ begin variables
+  //Variables can be used in the guards of constraints and are updated as side effects of the execution of actions
+  x1 = 0
+ end variables
+ 
+ begin abstract features
+  af1 
+  af2
+ end abstract features
+ 
+ begin concrete features
+  cf1 cf2 cf3 
+  cf4 cf5
+ end concrete features
+ 
+ begin feature diagram
+  //The abstract feature af has 4 sons, with cf3 being mandatory 
+  af1 -> {?cf1,?cf2,cf3, ?af2}
+  //The abstract feature af has 2 sons. At least one of them must be installed
+  af2 -OR-> {cf4,cf5}
+  //The abstract feature af has 2 sons. Exactly one of them must be installed
+  //af2 -XOR-> {cf4,cf5}
+  
+  //Concrete features can be installed and uninstalled. An abstract feature is automatically installed as soon as one of its descendants are installed.
+  //The abstract feature af is the root of the feature diagram, and can hence be used to refer to the current product
+ end feature diagram
+ 
+ begin cross-tree constraints
+  //cf1 can be installed only if cf2 is installed
+  cf1 requires cf2
+  //It is forbidden to install both cf2 and cf5
+  cf2 excludes cf5
+ end cross-tree constraints
+ 
+ begin feature predicates
+  //Predicates are real functions over concrete features. These are exended to abstract features by summing the values of their installed desendants   
+  //E.g., cf1 has price 1, cf2 has price 2, cf4 has price 4, all other concrete features have price 0.
+  //If only cf2 and cf4 are installed, af has price 6, while af2 has price 4
+  price= { cf1 = 1.0 , cf2 = 2 , cf4 = 4}
+ end feature predicates
+ 
+ begin quantitative constraints
+ //The price of generated products must never exceed 6
+  { price(af1) <= 6 }
+  //The variable x1 must not exceed value 1
+  { x1 <= 1}
+ end quantitative constraints 
+ 
+ 
+ begin actions
+  //The set of actions that can be executed. In addition to these, also installed concrete features can be 'executed', meaning that the user is using them
+  act1 act2
+ end actions
+ 
+ 
+ begin action constraints
+  //The action act1 can be executed only if cf2 is installed and x1 has value 1 
+  do(act1) -> (has(cf2) and {x1 == 1})
+  //do(act1) -> !has(cf1) and false 
+  //QFLan comes with a set of builtin constraints: in order to use a concrete feature, it must be installed:
+  //do(cf1) -> has(cf1)
+  //do(cf2) -> has(cf2)
+  //do(cf3) -> has(cf3)
+  //do(cf4) -> has(cf4)
+  //do(cf5) -> has(cf5) 
+ end action constraints
+ 
+ begin processes diagram
+  begin process proc1
+  states = state1 , state2
+  transitions = 
+  	state1 -(act2,2,{x1=1})-> state2 ,
+  	state1 -(cf2,3)-> state2 ,
+  	
+  	state2 -(act1,2,{x1=0})-> state1 ,
+  	state2 -(install(cf2),3)-> state1 ,
+  	state2 -(cf3,5)-> nil
+  end process	
+ end processes diagram
+ 
+ begin init
+  installedFeatures = { cf3 , cf4 }
+  initialProcesses = proc1
+ end init
+ 
+ /*
+ begin simulate
+  //Perform 15 steps of simulations using 1 as random seed. Write the output in file output.txt the output   
+  seed = 1
+  steps = 15
+  file = "./outputDiagram.txt"
+ end simulate
+ */
+ 
+ begin analysis
+  // Estimate the 1) the probability of installing each feature, 2) the average price of the product at each step of simulation.  
+  // The two estimate are computed at all simulation steps from 1 to 100 with increment 5 (1,6,11,...).  
+  // The parameters alpha and delta define the required confidence interval: with probability 1-alpha, each value to be computed belongs to x' +- deltai/2, with:
+  // - x' one of the an estimates, 
+  // - deltai the corresponding entry of delta
+  query = eval from 1 to 100 by 5 : 
+  {price(af1) [delta=1.0], af1 , af2 , cf1 , cf2, cf3, cf4, cf5 , x1}  
+  default delta=0.1
+  alpha = 0.1
+  parallelism = 1
+ end analysis 
+ 
+end model

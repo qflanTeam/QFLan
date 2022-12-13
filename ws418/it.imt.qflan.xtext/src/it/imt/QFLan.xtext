@@ -1,0 +1,901 @@
+grammar it.imt.QFLan with org.eclipse.xtext.common.Terminals
+
+generate qFLan "http://www.imt.it/QFLan"
+
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
+Model :
+modelDefinitions = ModelDefinition
+;
+	
+ModelDefinition:
+'begin' 'model' name = ID	
+	//Variables
+	(elements+= QFLanVariables)
+	//Features
+	(elements+= AbstractFeatures)
+	(elements+= ConcreteFeatures)
+	(elements+= RealtionsAmongFeatures)
+	(elements+= CrossTreeConstraints)
+	(elements+= FeaturePredicates)
+	(elements+= QuantitativeConstraints)
+	//Actions
+	(elements+= Actions)
+	(elements+= ActionConstraints)
+	//Processes
+	(
+		(	(elements+= Processes)
+			//Init 
+			(elements+= InitWithProcesses)
+		)
+		|
+		(	(elements+= ProcessDiagram)
+			//Init
+			(elements+= InitWithProcessDiagram)
+		)
+	)
+	//Init
+	//(elements+= InitialState)
+	//Analysis
+	(
+		(elements+= Analysis) |
+		(elements+= Simulate)
+	)
+'end' 'model'		
+;
+
+Analysis:
+	'begin' 'analysis'
+	
+	(('queryFile' '=' queryFile = STRING
+	 'delta' '=' delta = STRING) 
+		|
+	 ('query' '=' 'eval' query= MultiQuatexQuery
+	  'default' 'delta' '=' defaultDelta = ArithmeticExpression	
+	 )
+	 /*( nonParametricqueries = NonParametricQueries |
+	   parametricquery = ParametricQuery
+	 )	*/
+	)
+	'alpha' '=' alpha = POSITIVEINTORREAL
+	'parallelism' '=' parallelism=NAT
+	('simulations' 'block' '=' blockSize=NAT)?
+	('intermediate' 'results' '=' ir=NAT)?
+	/*String alpha = "0.1";
+	String delta = "[20.0,1.0,5.0,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1]";
+	int parallelism = 1;
+	int ir = 5;
+	int blockSize=20;*/
+	('logs' '=' logFile=STRING)?
+	'end' 'analysis'
+;
+
+MultiQuatexQuery:
+	NonParametricQueries|ParametricQuery|SteadyStateQuery
+	//| UntilQuery
+;
+NonParametricQueries:
+	queries+=NonParametricQuery (',' queries+=NonParametricQuery)*
+;
+NonParametricQuery:
+	//'when' cond=Constraint ':' mqObs=SetOfObs
+	'when' cond=ConditionOfQuery ':' mqObs=SetOfObs
+;
+UntilQuery:
+	//'until' cond=Constraint ':' mqObs=SetOfObs
+	'until' cond=ConditionOfQuery ':' mqObs=SetOfObs
+;
+SteadyStateQuery:
+	'at' 'steady-state' 'by' algorithm=("BM"|"RD") ':' mqObs=SetOfObs
+;
+
+ParametricQuery:
+    'from' from=(NAT|ZERO) 'to' to=NAT 'by' step=NAT ':' mqObs=SetOfObs 
+;
+
+/*MultiQuaTExObs:
+	observations=SetOfObs
+	//SetOfFeatures
+;*/
+
+AdditionWithPredicatesAndFeaturesWithOptionalDelta:
+	obs=AdditionWithPredicatesAndFeaturesForQuery ('[' 'delta' '=' delta= ArithmeticExpression ']')?
+;
+
+SetOfObs:
+	'{' obs+=AdditionWithPredicatesAndFeaturesWithOptionalDelta (',' obs+=AdditionWithPredicatesAndFeaturesWithOptionalDelta)* '}'
+;
+
+
+Simulate:
+	'begin' 'simulate'
+	'seed' '=' seed = NAT
+	'steps' '=' steps = NAT
+	'file' '=' file = STRING
+	'end' 'simulate'
+;
+
+InitWithProcessDiagram:
+	'begin' 'init'  
+	'installedFeatures' '=' (installedFeatures= SetOfConcreteFeatures | '{' '}')
+	'initialProcesses' '=' (processes+=[ProcessOfDiagram] ('|' processes+=[ProcessOfDiagram])*)
+	'end' 'init'
+;
+InitWithProcesses:
+	'begin' 'init'  
+	'installedFeatures' '=' (installedFeatures= SetOfConcreteFeatures | '{' '}')
+	'initialProcess' '=' initialProcess= [ProcessDefinition]
+	'end' 'init'
+;
+
+/*InitialProcess:
+	((refToProcessDefinition=ReferenceToProcessDefinition) |(refToInitialProcessesOfDiagram=InitialProcessesOfDiagram))
+;*/
+/*
+InitialProcessesOfDiagram:
+	processes+=ReferenceToProcessOfDiagram ('||' processes+=ReferenceToProcessOfDiagram)*
+; */
+
+ReferenceToProcessOfDiagram:
+	value=[ProcessOfDiagram]
+;
+
+
+FeaturePredicates: {FeaturePredicates}
+	'begin' 'feature' 'predicates'  
+	(featurePredicates += FeaturePredicate)*
+	'end' 'feature' 'predicates'
+;
+
+
+FeaturePredicate:
+	name = ID '=' '{'(values += FeaturePredicateValue) (',' values += FeaturePredicateValue)* '}'
+;
+
+FeaturePredicateValue:
+	feature = [ConcreteFeature]	'=' value=ArithmeticExpression
+;
+
+QFLanVariables:{QFLanVariables}
+	'begin' 'variables'  
+	(variables += QFLanVariable)*
+	'end' 'variables'
+;
+
+QFLanVariable:
+	name = ID '=' value = ArithmeticExpression
+	//name = ID '=' value = ArithmeticExpressionWithVariables
+	//'qflanVariable' '(' name = ID ',' value = ArithmeticExpression ')'
+;
+
+AbstractFeatures:
+	'begin' 'abstract' 'features'  
+	(abstractFeatures += AbstractFeature)+
+	'end' 'abstract' 'features'
+;
+
+AbstractFeature:
+	name = ID 
+;
+
+ConcreteFeatures:
+	'begin' 'concrete' 'features'  
+	(concreteFeatures += ConcreteFeature)+
+	'end' 'concrete' 'features'	
+;
+
+ConcreteFeature:
+	name = ID
+;
+
+Feature:
+	AbstractFeature|ConcreteFeature//|Action
+;
+
+RealtionsAmongFeatures: {RealtionsAmongFeatures}
+	'begin' 'feature' 'diagram'
+	(relations+= FatherAndSonsRelations)+
+	'end' 'feature' 'diagram'
+;
+
+FatherAndSonsRelations:
+	FatherAndSons|XORFatherAndSons|ORFatherAndSons
+;
+
+FatherAndSons:
+	father = [AbstractFeature]	'->' sonsSet=SetOfPossiblyOptionalFeatures
+;
+
+XORFatherAndSons:
+	father = [AbstractFeature]	'-' 'XOR' '->' sonsSet=SetOfFeatures
+;
+ORFatherAndSons:
+	father = [AbstractFeature]	'-' 'OR' '->' sonsSet=SetOfFeatures
+;
+
+SetOfFeatures:
+	'{' features+=[Feature] (',' features+=[Feature])* '}'
+;
+SetOfPossiblyOptionalFeatures:
+	'{' features+=PossiblyOptionalFeature (',' features+=PossiblyOptionalFeature)* '}'
+;
+
+PossiblyOptionalFeature:
+	(mandatoryFeature=[Feature])|
+	('?'optionalFeature=[Feature])
+;
+
+Actions: {Actions}
+	'begin' 'actions'  
+	(actions += Action)*
+	'end' 'actions'
+;
+
+//I have to make concretefeatures being actions
+Action:
+	//ReferenceToConcreteFeature |
+	name = ID
+;
+
+/*SpecialActions:
+	'install' '(' feature=[ConcreteFeature] ')' |
+	'uninstall' '(' feature=[ConcreteFeature] ')' |
+	'replace' '(' toRemove=[ConcreteFeature] ',' toAdd=[ConcreteFeature] ')' |
+	'ask' '(' question=Constraint ')'
+	//| ReferenceToFeature
+;*/
+StoreModifierActions:
+	InstallAction  | UninstallAction | ReplaceAction /*| AskAction */
+;
+
+InstallAction:
+	'install' '(' feature=[ConcreteFeature] ')'
+;
+
+UninstallAction:
+	'uninstall' '(' feature=[ConcreteFeature] ')'
+;
+
+ReplaceAction:
+	'replace' '(' toRemove=[ConcreteFeature] ',' toAdd=[ConcreteFeature] ')'
+;
+
+AskAction:
+	'ask' '(' question=Constraint ')'
+;
+
+StoreModifierActionOrReferenceToActionOrToFeature:
+	StoreModifierActions | ReferenceToActionOrFeature 
+;
+
+AskOrStoreModifierActionOrReferenceToActionOrToFeature:
+	StoreModifierActionOrReferenceToActionOrToFeature | AskAction
+;
+
+
+ActionOrFeature:
+	AbstractFeature|ConcreteFeature|Action
+;
+
+
+ReferenceToActionOrFeature:
+	//value = ([Action]|[Feature])
+	value = [ActionOrFeature]
+	//value = ([Feature]|[Action])
+;
+
+ActionConstraints:{ActionConstraints}
+	'begin' 'action' 'constraints'
+	(actionConstraints+= ActionRequires)*
+	'end' 'action' 'constraints'
+;
+
+ActionRequires: // returns BoolExpr:DO I NEED THIS?
+	//'do' '(' action=[Action] ')' '->' constraint=PrimaryBooleanConstraintExpr {ActionRequires.constraint=current} 
+	'do' '(' action=StoreModifierActionOrReferenceToActionOrToFeature ')' '->'
+	 	//constraint=PrimaryBooleanConstraintExpr //{ActionRequires.constraint=current}
+	 	constraint=AndBoolConstraintExpr
+;
+
+CrossTreeConstraints:{CrossTreeConstraints}
+	'begin' 'cross-tree' 'constraints'
+	(crossTreeConstraints+= CrossTreeConstraint)*
+	'end' 'cross-tree' 'constraints'
+;
+
+CrossTreeConstraint:
+	FeatureRequires|FeatureExcludes
+;
+
+QuantitativeConstraints:{QuantitativeConstraints}
+	'begin' 'quantitative' 'constraints'
+	(quantitativeConstraints+= Constraint)*
+	'end' 'quantitative' 'constraints'
+;
+
+Constraint returns BoolExpr:
+	AndBoolConstraintExpr	
+;
+
+AndBoolConstraintExpr returns BoolExpr: 
+	OrBoolConstraintExpr ({AndBoolConstraintExpr.left=current} 'and' right=OrBoolConstraintExpr)* 
+;
+OrBoolConstraintExpr returns BoolExpr: 
+	ImpliesBoolConstraintExpr ({OrBoolConstraintExpr.left=current} 'or' right=ImpliesBoolConstraintExpr)* 
+;
+ImpliesBoolConstraintExpr returns BoolExpr: 
+	PrimaryOrNotPrimaryBooleanConstraintExpr ({ImpliesBoolConstraintExpr.left=current} 'implies' right=PrimaryOrNotPrimaryBooleanConstraintExpr)* 
+;
+
+PrimaryOrNotPrimaryBooleanConstraintExpr returns BoolExpr:
+	PrimaryBooleanConstraintExpr | NotConstraintExpr //| ActionRequires
+;
+
+NotConstraintExpr returns BoolExpr:
+	'!' PrimaryBooleanConstraintExpr {NotConstraintExpr.left=current}
+;
+
+PrimaryBooleanConstraintExpr returns BoolExpr:
+ PrimaryConstraint   
+ | '(' AndBoolConstraintExpr ')' 
+ ;
+
+PrimaryConstraint: 
+	//FeatureRequires |  
+	//AtLeastOne | AtMostOne | PreciselyOne | 
+	HasFeature | 
+	FalseConstraint | TrueConstraint
+	| DisequationOfPredicateExpr
+;
+
+TrueConstraint: {TrueConstraint} //; returns STRING:{STRING}
+	"true"
+;
+FalseConstraint: {FalseConstraint} //; returns STRING:{STRING}
+	"false"
+;
+HasFeature: 
+	//'has' '(' feature=[ConcreteFeature] ')'
+	'has' '(' feature=[Feature] ')'
+	;
+/*PreciselyOne:
+	(//'precislyOne' featuresSet=SetOfConcreteFeatures // '{' features+=[ConcreteFeature] (',' features+=[ConcreteFeature])* '}'
+	'alternative' featuresSet=SetOfConcreteFeatures
+	)
+	|
+	('mandatory' feature=[ConcreteFeature])	
+;
+AtLeastOne:
+	'atLeastOne' featuresSet=SetOfConcreteFeatures // '{' features+=[ConcreteFeature] (',' features+=[ConcreteFeature])* '}'	
+;
+AtMostOne:
+	'atMostOne' featuresSet=SetOfConcreteFeatures // '{' features+=[ConcreteFeature] (',' features+=[ConcreteFeature])* '}'	
+;*/
+SetOfConcreteFeatures: {SetOfConcreteFeatures}
+	'{' features+=[ConcreteFeature] (',' features+=[ConcreteFeature])* '}'
+;
+
+FeatureRequires:
+	requirer = [Feature] 'requires' required = [Feature]	
+;
+FeatureExcludes:
+	first = [Feature] 'excludes' second = [Feature]	
+;
+
+//Try to understand why we have to uses curly brackets here.
+DisequationOfPredicateExpr:
+	//'(' lhs= PredicateExpr comp=Comp rhs= PredicateExpr ')'
+	//comp=Comp'(' lhs= PredicateExpr rhs= PredicateExpr ')'
+	//'{' lhs= PredicateExpr comp=Comp rhs= PredicateExpr '}' 
+	'{' lhs= PredicateExpr comp=Comp rhs= PredicateExpr '}'
+;
+
+PredicateExpr returns Expression:
+	//Predicate | NumberLiteral  
+	//ArithmeticPredicateExpression
+	//ArithmeticExpression
+	
+	AdditionWithPredicates
+	//PrimaryOrMinusPrimaryWithPredicates
+;
+
+/*ArithmeticPredicateExpression returns Expression:
+	AdditionWithPredicates	
+;*/
+
+AdditionWithPredicates returns Expression:
+ SubtractionWithPredicates ({AdditionWithPredicates.left=current} '+' right=SubtractionWithPredicates)* 
+ //PrimaryOrMinusPrimaryWithPredicates ({AdditionWithPredicates.left=current} '+' right=PrimaryOrMinusPrimaryWithPredicates)*
+ ; 
+ 
+SubtractionWithPredicates returns Expression:
+ MultiplicationWithPredicates ({SubtractionWithPredicates.left=current} '-' right=MultiplicationWithPredicates)* 
+ ; 
+
+MultiplicationWithPredicates returns Expression:
+ //DivisionWithPredicates ({MultiplicationWithPredicates.left=current} '*' right=DivisionWithPredicates)*
+ PrimaryOrMinusPrimaryWithPredicates ({MultiplicationWithPredicates.left=current} '*' right=PrimaryOrMinusPrimaryWithPredicates)*
+ ; 
+
+/*DivisionWithPredicates returns Expression:
+ PowerWithPredicates ({DivisionWithPredicates.left=current} '/' right=PowerWithPredicates)*;
+  
+PowerWithPredicates returns Expression:
+ PrimaryOrMinusPrimaryWithPredicates ({PowerWithPredicates.left=current} '^' right=PrimaryOrMinusPrimaryWithPredicates)* ;*/ 
+
+PrimaryOrMinusPrimaryWithPredicates returns Expression:
+	PrimaryWithPredicates | MinusPrimaryWithPredicates
+;
+
+MinusPrimaryWithPredicates returns Expression:
+	'-' PrimaryWithPredicates {MinusPrimaryWithPredicates.left=current}
+;
+
+PrimaryWithPredicates returns Expression:
+ NumberLiteral  
+ | Predicate
+ | RefToQFLanVariable
+ //| PredicateOrQFLanVariable
+ | '(' AdditionWithPredicates ')' 
+;
+
+AdditionWithPredicatesAndFeaturesForQuery returns Expression:
+ SubtractionWithPredicatesAndFeaturesForQuery ({AdditionWithPredicatesAndFeaturesForQuery.left=current} '+' right=SubtractionWithPredicatesAndFeaturesForQuery)* 
+ //PrimaryOrMinusPrimaryWithPredicates ({AdditionWithPredicates.left=current} '+' right=PrimaryOrMinusPrimaryWithPredicates)*
+ ; 
+ 
+SubtractionWithPredicatesAndFeaturesForQuery returns Expression:
+ MultiplicationWithPredicatesAndFeaturesForQuery ({SubtractionWithPredicatesAndFeaturesForQuery.left=current} '-' right=MultiplicationWithPredicatesAndFeaturesForQuery)* 
+ ; 
+
+MultiplicationWithPredicatesAndFeaturesForQuery returns Expression:
+ //DivisionWithPredicates ({MultiplicationWithPredicates.left=current} '*' right=DivisionWithPredicates)*
+ PrimaryOrMinusPrimaryWithPredicatesAndFeaturesForQuery ({MultiplicationWithPredicatesAndFeaturesForQuery.left=current} '*' right=PrimaryOrMinusPrimaryWithPredicatesAndFeaturesForQuery)*
+ ; 
+
+/*DivisionWithPredicates returns Expression:
+ PowerWithPredicates ({DivisionWithPredicates.left=current} '/' right=PowerWithPredicates)*;
+  
+PowerWithPredicates returns Expression:
+ PrimaryOrMinusPrimaryWithPredicates ({PowerWithPredicates.left=current} '^' right=PrimaryOrMinusPrimaryWithPredicates)* ;*/ 
+
+PrimaryOrMinusPrimaryWithPredicatesAndFeaturesForQuery returns Expression:
+	PrimaryWithPredicatesAndFeaturesForQuery | MinusPrimaryWithPredicatesAndFeaturesForQuery
+;
+
+MinusPrimaryWithPredicatesAndFeaturesForQuery returns Expression:
+	'-' PrimaryWithPredicatesAndFeaturesForQuery {MinusPrimaryWithPredicatesAndFeaturesForQuery.left=current}
+;
+
+PrimaryWithPredicatesAndFeaturesForQuery returns Expression:
+ NumberLiteral  
+ | Predicate
+ | Step
+ | ReftToQFLanVariableOrFeature
+ //| ConditionOfQuery
+ | '(' AdditionWithPredicatesAndFeaturesForQuery ')' 
+;
+
+Step:{Step}
+	'steps'
+;
+
+QFLanVariableOrFeature:
+	QFLanVariable|
+	ConcreteFeature|AbstractFeature
+;
+ReftToQFLanVariableOrFeature:
+	value=[QFLanVariableOrFeature]
+;
+
+RefToQFLanVariable  //returns Expression
+:
+	varqflan = [QFLanVariable]
+; 
+
+Predicate :
+	predicate=[FeaturePredicate] '('feature=[Feature]')'
+;
+
+Comp: //returns STRING:{STRING}
+	('<' | '>' | '<=' | '>=' | '==' | '!=') 
+;
+
+ProcessDiagram: {ProcessDiagram}
+	'begin' 'processes' 'diagram'  
+	(processes += ProcessOfDiagram)*
+	'end' 'processes' 'diagram'
+;
+
+ProcessOfDiagram:
+	'begin' 'process' name=ID
+	 'states' '=' states=States
+	 'transitions' '=' transitions=Transitions 
+	'end' 'process'
+;
+
+States:
+	states += ProcessState (',' states += ProcessState)*	
+;
+Transitions:
+	transitions+=ProcessTransition (',' transitions+=ProcessTransition)*
+;
+
+ProcessState:
+	name=ID
+;
+ReferenceToProcessState:
+	value=[ProcessState]
+;
+ProcessTransition:
+	source=[ProcessState] '-' '('
+		action=AskOrStoreModifierActionOrReferenceToActionOrToFeature ',' 
+		rate=ArithmeticExpression 
+		( ',' '{' (sideEffects=SideEffects)? '}')?
+	')' '->'
+	target=ReferenceToProcessStateOrZeroProcess
+;
+
+ReferenceToProcessStateOrZeroProcess:
+	ReferenceToProcessState|ZeroProcess
+;
+
+Processes: {Processes}
+	'begin' 'processes'  
+	(processDefinitions += ProcessDefinition)*
+	'end' 'processes'
+;
+
+Process returns ProcessExpr:
+	Choice
+;
+ 
+Choice returns ProcessExpr:
+	first=Parallel ({Choice.first=current} '+' second=Parallel)*
+; 
+
+Parallel returns ProcessExpr:
+ first=Sequential ({Parallel.first=current} '|' second=Sequential)* 
+;
+
+Sequential returns ProcessExpr:
+ first=PrefixOrPrimaryProcess ({Sequential.first=current} ';' second=PrefixOrPrimaryProcess)* 
+ //first=(Prefix | PrimaryProcess) ({Sequential.first=current} ';' right=(Prefix | PrimaryProcess))*
+ ;
+ 
+  PrefixOrPrimaryProcess returns ProcessExpr:
+	//ProcessDefinition] | 
+	Prefix | PrimaryProcess
+;
+ 
+Prefix:
+	//'(' action=[Action] ',' rate=ArithmeticExpression ')' '.' continuation=PrimaryProcess {Prefix.continuation=current}
+	'(' action=AskOrStoreModifierActionOrReferenceToActionOrToFeature ',' rate=ArithmeticExpression ( ',' '{' (sideEffects=SideEffects)? '}')? ')' '.' continuation=PrimaryProcess //{Prefix.continuation=current}
+;
+
+SideEffects:
+	effects+=SideEffect (',' effects+=SideEffect)*
+;
+
+SideEffect: {SideEffect}
+	//refToQFLanVar=RefToQFLanVariable '=' value = ArithmeticExpressionWithVariables
+	refToQFLanVar=RefToQFLanVariable '=' value = PredicateExpr
+;
+
+ProcessDefinition:
+	//name=ID '=' body=PrimaryProcess {ProcessDefinition.body=current}
+	//'process' name=ID '=' body=Process {ProcessDefinition.body=current}
+	'process' name=ID '=' body=Process //{ProcessDefinition.body=current}
+;
+
+ReferenceToProcessDefinition:
+ value = [ProcessDefinition]
+;
+
+PrimaryProcess returns ProcessExpr://{PrimaryProcess}
+	ZeroProcess | ReferenceToProcessDefinition
+	| '(' Choice ')' 
+;
+
+ZeroProcess:{ZeroProcess}
+	'nil'
+;
+
+
+/*
+ArithmeticExpressionWithVariables returns Expression:
+	AdditionWithVariables 
+;
+
+AdditionWithVariables returns Expression:
+ SubtractionWithVariables ({AdditionWithVariables.left=current} '+' right=SubtractionWithVariables)* 
+ ; 
+ 
+SubtractionWithVariables returns Expression:
+ MultiplicationWithVariables ({SubtractionWithVariables.left=current} '-' right=MultiplicationWithVariables)*; 
+
+MultiplicationWithVariables returns Expression:
+ DivisionWithVariables ({MultiplicationWithVariables.left=current} '*' right=DivisionWithVariables)*; 
+
+DivisionWithVariables returns Expression:
+ PowerWithVariables ({DivisionWithVariables.left=current} '/' right=PowerWithVariables)*; 
+  
+PowerWithVariables returns Expression:
+ PrimaryOrMinusPrimaryWithVariables ({PowerWithVariables.left=current} '^' right=PrimaryOrMinusPrimaryWithVariables)* ; 
+
+PrimaryOrMinusPrimaryWithVariables returns Expression:
+	PrimaryWithVariables | MinusPrimaryWithVariables
+;
+
+MinusPrimaryWithVariables returns Expression:
+	'-' PrimaryWithVariables {MinusPrimaryWithVariables.left=current}
+;
+
+PrimaryWithVariables returns Expression:
+ NumberLiteral  
+ | RefToQFLanVariable
+ | '(' AdditionWithVariables ')' ;
+ */
+
+
+
+
+
+
+ArithmeticExpression returns Expression:
+	Addition 
+;
+
+Addition returns Expression:
+ Subtraction ({Addition.left=current} '+' right=Subtraction)* 
+ ; 
+ 
+Subtraction returns Expression:
+ Multiplication ({Subtraction.left=current} '-' right=Multiplication)*; 
+
+Multiplication returns Expression:
+ Division ({Multiplication.left=current} '*' right=Division)*; 
+
+Division returns Expression:
+ Power ({Division.left=current} '/' right=Power)*; 
+  
+Power returns Expression:
+ PrimaryOrMinusPrimary ({Power.left=current} '^' right=PrimaryOrMinusPrimary)* ; 
+
+PrimaryOrMinusPrimary returns Expression:
+	Primary | MinusPrimary
+;
+
+MinusPrimary returns Expression:
+	'-' Primary {MinusPrimary.left=current}
+;
+
+Primary returns Expression:
+ NumberLiteral  
+ | '(' Addition ')' ;
+ 
+NumberLiteral:
+ value = NONNEGATIVEINTORREAL
+;
+
+NONNEGATIVEINTORREAL returns ecore::EDouble: ZERO | POSITIVEINTORREAL;
+POSITIVEINTORREAL returns ecore::EDouble: NAT | NONNEGATIVEREAL;
+terminal NONNEGATIVEREAL returns ecore::EDouble: 
+	(
+		(INT '.' INT) |
+		//
+		(INT '.' ('0'..'9') (('0'..'9')?) 'e' INT ) |
+		(INT '.' ('0'..'9') (('0'..'9')?) 'E' INT ) |
+		(INT '.' ('0'..'9') (('0'..'9')?) 'e' SIGN INT ) |
+		(INT '.' ('0'..'9') (('0'..'9')?) 'E' SIGN INT ) |
+		//
+		(INT  'e' INT ) |
+		(INT  'E' INT ) |
+		(INT  'e' SIGN INT ) |
+		(INT  'E' SIGN INT )
+		)	
+;
+terminal SIGN :
+	'-' | '+' 
+;
+terminal NAT returns ecore::EInt: (('1'..'9') (INT?));//terminal NAT returns ecore::EInt: (('1'..'9') ('0'..'9')*);
+terminal ZERO returns ecore::EInt: '0';
+
+/*Query:
+	 (temporalOperators+= TemporalOperator)*
+	 (
+	 	(evals+=EVAL)+ 
+	 	|
+	 	(evalParametric+=EVALPARAMETRIC)
+	 )
+;
+
+TemporalOperator:
+	name = ID '(' (variables+=Variable (',' variables+=Variable)* )? ')' '=' 
+	body = TemporalOperatorBody 
+	';'
+;
+
+Variable:
+	name = ID
+;
+
+RefToVariable:
+	var = [Variable]
+;
+
+//This has to be done properly as for expressions
+TemporalOperatorBody:
+	//nested if-then-else-fi
+	ArithmeticExpressionQuatex | 
+	//RefToVariable | 's' '.' 'rval' '(' obs = Obs ')' | 
+	'#' nextTempOp = [TemporalOperator] '(' (variables+=RefToVariable (',' variables+=RefToVariable)* )? ')'
+	//| tempOp = [TemporalOperator]
+	| 'if' '{' guard = Guard '}' 'then' '{' then = TemporalOperatorBody '}' 'else' '{' else = TemporalOperatorBody '}' 'fi'  
+;
+
+Guard:
+	lhs = ArithmeticExpressionQuatex comp=Comp rhs = ArithmeticExpressionQuatex 
+;
+
+Obs:
+	obs = StepOrRefToConcreteFeatureOrPredicateName
+	//obs = [ConcreteFeature]
+;
+ConcreteFeatureOrFeaturePredicate:
+	ConcreteFeature|FeaturePredicate
+;
+RefToConcreteFeatureOrPredicateName:
+	//ref = (RefToConcreteFeature|RefToPredicateName)
+	ref = [ConcreteFeatureOrFeaturePredicate]
+;
+StepOrRefToConcreteFeatureOrPredicateName:
+	//RefToConcreteFeature | RefToPredicateName
+	RefToConcreteFeatureOrPredicateName | 
+	 'STEP'
+;
+
+EVAL:
+	//eval E[ ProductObsAfterFirstDeploy({"'price"}) ] ;
+	'eval' EOfEval ';' 
+;
+
+EOfEval:
+	'E' '[' whatToEval=WhatToEval ']'
+;
+
+WhatToEval:
+	//nested if-then-else-fi
+	ArithmeticExpressionQuatex | 
+	//RefToVariable | 's' '.' 'rval' '(' obs = Obs ')' | 
+	tempOp = [TemporalOperator] '(' (obs += Obs ((',' obs += Obs)*) ) ')'
+	//| tempOp = [TemporalOperator]
+	//| 'if' '{' guard = Guard '}' 'then' '{' then = TemporalOperatorBody '}' 'else' '{' else = TemporalOperatorBody '}' 'fi'  
+;
+
+//eval parametric(E[ ProductObsAtStep(x,{"price"}) ],E[ ProductObsAtStep(x,{"Trashed"}) ],x,0.0,30.0,500.0) ;
+EVALPARAMETRIC:
+	'eval' 'parametric' '(' 
+	//,x,0.0,30.0,500.0
+	var += Variable
+	','  from = NONNEGATIVEINTORREAL
+	','  step = NONNEGATIVEINTORREAL
+	','  to = NONNEGATIVEINTORREAL
+	',' evals+=EOfEvalWithVar (',' evals+=EOfEvalWithVar)*	
+	')' ';'
+;
+
+EOfEvalWithVar:
+	'E' '[' whatToEval=WhatToEvalWithVar ']'
+;
+WhatToEvalWithVar:
+	ArithmeticExpressionQuatex | 
+	tempOpWithVar = [TemporalOperator] '(' (obsOrVar += StepOrRefToConcreteFeatureOrPredicateNameOrVar ((',' obsOrVar += StepOrRefToConcreteFeatureOrPredicateNameOrVar)*) ) ')'  
+	//tempOpWithVar = [TemporalOperator] '(' (obsOrVar += RefToVariable ((',' obsOrVar += RefToVariable)*) ) ')'
+;
+
+
+
+ArithmeticExpressionQuatex returns Expression:
+	AdditionQuatex 
+;
+
+AdditionQuatex returns Expression:
+ SubtractionQuatex ({AdditionQuatex.left=current} '+' right=SubtractionQuatex)* 
+ ; 
+ 
+SubtractionQuatex returns Expression:
+ MultiplicationQuatex ({SubtractionQuatex.left=current} '-' right=MultiplicationQuatex)*; 
+
+MultiplicationQuatex returns Expression:
+ DivisionQuatex ({MultiplicationQuatex.left=current} '*' right=DivisionQuatex)*; 
+
+DivisionQuatex returns Expression:
+ PowerQuatex ({DivisionQuatex.left=current} '/' right=PowerQuatex)*; 
+  
+PowerQuatex returns Expression:
+ PrimaryOrMinusPrimaryQuatex ({PowerQuatex.left=current} '^' right=PrimaryOrMinusPrimaryQuatex)* ; 
+
+PrimaryOrMinusPrimaryQuatex returns Expression:
+	PrimaryQuatex | MinusPrimaryQuatex
+;
+
+MinusPrimaryQuatex returns Expression:
+	'-' PrimaryQuatex {MinusPrimaryQuatex.left=current}
+;
+
+ConcreteFeatureOrFeaturePredicateOrVar:
+	ConcreteFeatureOrFeaturePredicate|Variable
+;
+RefToConcreteFeatureOrPredicateNameOrVar:
+	//ref = (RefToConcreteFeature|RefToPredicateName)
+	ref = [ConcreteFeatureOrFeaturePredicateOrVar]
+;
+StepOrRefToConcreteFeatureOrPredicateNameOrVar:
+	RefToConcreteFeatureOrPredicateNameOrVar | 'STEP'
+;
+
+PrimaryQuatex returns Expression:
+ NumberLiteral  | RefToVariable 
+ //| 's' '.' 'rval' '(' obsOrVar = ObsOrVar ')' 
+ //| 's' '.' 'rval' '(' (var = [Variable] | obs = Obs) ')'
+ //| 's' '.' 'rval' '(' '{' obsOfRval = Obs | string = STRING '}' ')'
+ //| 's' '.' 'rval' '(' var = [Variable] ')'
+ //| 's' '.' 'rval' '(' '{'  string = STRING '}' ')'
+ //
+// | 's' '.' 'rval' '(' obsOfRval = Obs ')'
+// | 's' '.' 'rval' '(' '{' var = [Variable] '}'')'
+| 's' '.' 'rval' '(' obsOfRval = StepOrRefToConcreteFeatureOrPredicateNameOrVar ')'
+ | '(' AdditionQuatex ')' ;
+ */
+ 
+
+
+ConditionOfQuery returns BoolExpr:
+	AndBoolConditionOfQueryExpr	
+;
+
+AndBoolConditionOfQueryExpr returns BoolExpr: 
+	OrBoolConditionOfQueryExpr ({AndBoolConditionOfQueryExpr.left=current} 'and' right=OrBoolConditionOfQueryExpr)* 
+;
+OrBoolConditionOfQueryExpr returns BoolExpr: 
+	ImpliesBoolConditionOfQueryExpr ({OrBoolConditionOfQueryExpr.left=current} 'or' right=ImpliesBoolConditionOfQueryExpr)* 
+;
+ImpliesBoolConditionOfQueryExpr returns BoolExpr: 
+	PrimaryOrNotPrimaryBooleanConditionOfQueryExpr ({ImpliesBoolConditionOfQueryExpr.left=current} 'implies' right=PrimaryOrNotPrimaryBooleanConditionOfQueryExpr)* 
+;
+
+PrimaryOrNotPrimaryBooleanConditionOfQueryExpr returns BoolExpr:
+	PrimaryBooleanConditionOfQueryExpr | NotConditionOfQueryExpr
+;
+
+NotConditionOfQueryExpr returns BoolExpr:
+	'!' PrimaryBooleanConditionOfQueryExpr {NotConditionOfQueryExpr.left=current}
+;
+
+PrimaryBooleanConditionOfQueryExpr returns BoolExpr:
+ PrimaryConditionOfQuery   
+ | '(' AndBoolConditionOfQueryExpr ')' 
+ ;
+
+PrimaryConditionOfQuery: 
+	HasFeature | 
+	FalseConditionOfQuery | TrueConditionOfQuery
+	| DisequationOfPredicateExprForConditionOfQuery
+;
+
+TrueConditionOfQuery: {TrueConditionOfQuery}
+	"true"
+;
+FalseConditionOfQuery: {FalseConditionOfQuery} //; returns STRING:{STRING}
+	"false"
+;
+
+//Try to understand why we have to uses curly brackets here.
+DisequationOfPredicateExprForConditionOfQuery: 
+	'{' lhs=PredicateExprForConditionOfQuery  comp=Comp rhs= PredicateExprForConditionOfQuery '}'
+;
+
+PredicateExprForConditionOfQuery returns Expression:
+	AdditionWithPredicatesAndFeaturesForQuery
+;

@@ -1,0 +1,24 @@
+ProductObsAfterFirstDeploy(obs_S) =
+ if { s.rval("deploys") == 1.0 }
+	then { s.rval(obs_S) }
+	else # ProductObsAfterFirstDeploy({obs_S})
+ fi ;
+eval E[ ProductObsAfterFirstDeploy({"price"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"weight"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"load"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"steps"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"AllYear"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"Summer"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"Winter"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"GPS"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"MapsApp"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"NaviApp"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"GuideApp"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"Music"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"Diamond"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"StepThru"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"Battery"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"Dynamo"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"Engine"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"Basket"}) ] ;
+eval E[ ProductObsAfterFirstDeploy({"Light"}) ] ;
