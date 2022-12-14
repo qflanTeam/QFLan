@@ -261,7 +261,7 @@ public class MyMultiVeStAAnalysisExecutor {
 	    	 else{
 	    		 MathEval math = new MathEval();
 	    		 String defaultDelta=String.valueOf(math.evaluate(MyParserUtil.visitExpr(analysis.getDefaultDelta())));
-	    		 queryFile="src-gen/query"+modelDef.getName()+".multiquatex";
+	    		 queryFile="src-gen"+File.separator+"query"+modelDef.getName()+".multiquatex";
 	    		 //math.eval(MyParserUtil.visitExpr(analysis.getDefaultDelta()));
 	    		 List<String> deltas = MyParserUtil.parseDeltas(analysis.getQuery(), defaultDelta);
 	    		 //deltas=MyParserUtil.parseDeltas(analysis.getQuery(), defaultDelta,math);
