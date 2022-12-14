@@ -2,6 +2,7 @@ package it.imt.qflan.core.tests;
 
 import java.util.ArrayList;
 import java.util.Collection;
+//import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
 import com.microsoft.z3.Z3Exception;
@@ -50,7 +51,10 @@ public class Test {
 		//ParametersForState pfs = new ParametersForState("/Users/andrea/Dropbox/runtime-QFLan.product/pino/BikesWithoutFakeFeatures2.qflan", "");
 		
 		//ParametersForState pfs = new ParametersForState("bikesdiagram", "");
-		ParametersForState pfs = new ParametersForState("/Users/andrea/Dropbox/runtime-QFLan.product/piero/BikesDiagram.qflan", "");
+		//ParametersForState pfs = new ParametersForState("/Users/andrea/Dropbox/runtime-QFLan.product/piero/BikesDiagram.qflan", "");
+		//ParametersForState pfs = new ParametersForState("/Users/andrea/Documents/QFLan/QFLan/runtime-QFLan.product/FASE2018/VendingMachine.qflan", "");
+		ParametersForState pfs = new ParametersForState("/Users/andrea/Documents/QFLan/QFLan/runtime-QFLan.product/FASE2018/src-gen/VendingMachine.java", "");
+
 		//ParametersForState pfs = new ParametersForState("/Users/andrea/Dropbox/runtime-QFLan.product/Piero/Pino.qflan", "");
 		//ParametersForState pfs = new ParametersForState("pino", "");
 		//ParametersForState pfs = new ParametersForState("pippo", "");
@@ -62,12 +66,12 @@ public class Test {
 		
 		double avg =0;
 		
-		int howManySimulations=10;
+		int howManySimulations=1;
 		ArrayList<Integer> seeds = new ArrayList<>(howManySimulations);
 		for(int i=0; i<howManySimulations;i++){
-			seeds.add(i);
+			seeds.add(i*100);
 		}
-		int howManySteps=500;
+		int howManySteps=20;
 		for(int i=0; i<howManySimulations;i++){
 			System.out.println("#################");
 			System.out.println("Simulation "+i);
@@ -75,7 +79,11 @@ public class Test {
 			qjs.setSimulatorForNewSimulation(seeds.get(i));
 			for(int s=0;s<howManySteps;s++){
 				qjs.performOneStepOfSimulation();
-				qjs.rval("price(Bike)");
+				//LinkedHashMap<String, String> logData = qjs.computeDataToLog();
+				//qjs.rval("price(Bike)");
+				String obs="price(Machine)";
+				//String obs="Coffee";
+				System.out.println(obs+" = "+qjs.rval(obs));
 				/*double di = qjs.rval("Diamond");
 				double ay = qjs.rval("AllYear");
 				double su = qjs.rval("Summer");

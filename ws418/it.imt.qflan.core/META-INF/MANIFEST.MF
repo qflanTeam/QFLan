@@ -5,7 +5,8 @@ Bundle-SymbolicName: it.imt.qflan.core
 Bundle-Version: 1.0.0.qualifier
 Bundle-ClassPath: core.jar,
  lib/z3/com.microsoft.z3.jar,
- lib/multivesta.jar
+ lib/multivesta.jar,
+ lib/matheval.jar
 Export-Package: .,
  cern.jet.random,
  cern.jet.random.engine,
@@ -29,6 +30,7 @@ Export-Package: .,
  it.imt.qflan.core.variables,
  it.imt.qflan.simulation.output,
  it.imtlucca.util,
+ matheval,
  vesta,
  vesta.mc
 Require-Bundle: org.eclipse.ui.console;bundle-version="3.6.100";visibility:=reexport

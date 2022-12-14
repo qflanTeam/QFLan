@@ -255,3 +255,7 @@ ws418/it.imt.qflan.product.win64/.settings/org.eclipse.jdt.core.prefs
 ws418/it.imt.qflan.product/.settings/org.eclipse.jdt.core.prefs
 ws418/it.imt.qflan.xtext.ide/.settings/org.eclipse.jdt.core.prefs
 ws418/it.imt.qflan.xtext.tests/.settings/org.eclipse.jdt.core.prefs
+ws418/matheval/.classpath
+ws418/matheval/.project
+ws418/matheval/.settings/org.eclipse.jdt.core.prefs
+ws418/matheval/src/matheval/MathEval.java

@@ -90,6 +90,7 @@ public class QFlanModel {
 	private HashMap<IAction, ArithExpr> actionAndFeatureToZ3Val;
 	/*private HashMap<QFLanVariable, ArithExpr> varToZ3;
 	private HashMap<QFLanVariable, ArithExpr> varToZ3Val;*/
+	private String lastPerformedActionName=null;
 	
 	public QFlanModel() throws Z3Exception {
 		super();
@@ -164,6 +165,8 @@ public class QFlanModel {
 		for (Entry<String, QFLanVariable> v : variables.entrySet()) {
 			updateVariableValue(v.getValue(), v.getValue().getInitialValue());
 		}
+		
+		lastPerformedActionName="reset";
 	}
 	
 	public boolean isInstalled(IFeature feature){
@@ -1227,8 +1230,15 @@ public class QFlanModel {
 				updateVariableValue(var, newValues[i]);
 			}
 		}*/
-		
+		lastPerformedActionName=commitment.getAction().getName();
 		//z3Initialized=false;
+	}
+	
+	protected void setLastPerformedActionName(String lastPerformedActionName) {
+		this.lastPerformedActionName = lastPerformedActionName;
+	}
+	public String getLastPerformedActionName() {
+		return lastPerformedActionName;
 	}
 	
 	

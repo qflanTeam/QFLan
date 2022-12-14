@@ -12,7 +12,6 @@ import it.imt.qflan.core.models.Elevator;
 /*import it.imt.qflan.core.models.BikesWithoutFakeFeatures;
 import it.imt.qflan.core.models.ElevatorOLD;*/
 import it.imt.qflan.core.predicates.interfaces.IPredicateDef;
-import it.imt.qflan.core.processes.interfaces.IAction;
 import it.imt.qflan.core.processes.interfaces.ICommitment;
 import it.imt.qflan.core.variables.QFLanVariable;
 import it.imtlucca.util.RandomEngineFacilities;
@@ -135,10 +134,12 @@ public class QFlanJavaState extends NewState {
 		//root = new File("/models/abc/d-e");//new File("/Users/andrea/Dropbox/runtime-EclipseApplication/qflan2/src-gen");//new File("/models/abc");//new File("/models"); // On Windows running on C:\, this is C:\java.
 		//root = new File("/Users/andrea/Dropbox/runtime-EclipseApplication/qflan2/src-gen");
 		String rootName = modelAbsolutePath.substring(0,modelAbsolutePath.lastIndexOf(File.separator));
-		rootName = rootName + File.separator + "src-gen";
-		root = new File(rootName);
 		String modelName = modelAbsolutePath.substring(modelAbsolutePath.lastIndexOf(File.separator)+1);
-		modelName = modelName.replace(".qflan", ".java");
+		if(modelAbsolutePath.endsWith(".qflan")) {
+			rootName = rootName + File.separator + "src-gen";
+			modelName = modelName.replace(".qflan", ".java");
+		}
+		root = new File(rootName);
 		sourceFile = new File(root, modelName);
 		File compilationLog = new File(root,sourceFile.getName().replace(".java", ".log"));
 		OutputStream stream=null;
@@ -358,10 +359,18 @@ public class QFlanJavaState extends NewState {
 		TOTALAPPLICATIONOFCOMMITMENT=0;
 		
 		if(toLog) {
-			LinkedHashMap<String, String> captionToValue = defaultLogInfo(true);
-			captionToValue.put("activity", "reset");
+			LinkedHashMap<String, String> captionToValue = computeDataToLog("reset");
 			addRowToLog(captionToValue);
 		}
+	}
+
+	public LinkedHashMap<String, String> computeDataToLog() {
+		return computeDataToLog(loadedModel.getLastPerformedActionName());
+	}
+	private LinkedHashMap<String, String> computeDataToLog(String performedActivity) {
+		LinkedHashMap<String, String> captionToValue = defaultLogInfo(true);
+		captionToValue.put("activity", cleanAction(performedActivity));
+		return captionToValue;
 	}
 	
 	private void addRowToLog(LinkedHashMap<String, String> captionToValue) {
@@ -468,9 +477,10 @@ public class QFlanJavaState extends NewState {
 				//QFlanModel.printTime("Application of commitment",begin,end);
 				
 				if(toLog) {
-					LinkedHashMap<String, String> captionToValue = defaultLogInfo(false);
-					IAction executed = comm.getAction();
-					captionToValue.put("activity", cleanAction(executed.getName()));
+//					LinkedHashMap<String, String> captionToValue = defaultLogInfo(false);
+//					IAction executed = comm.getAction();
+//					captionToValue.put("activity", cleanAction(executed.getName()));
+					LinkedHashMap<String, String> captionToValue = computeDataToLog(comm.getAction().getName());
 					addRowToLog(captionToValue);
 				}
 			}
