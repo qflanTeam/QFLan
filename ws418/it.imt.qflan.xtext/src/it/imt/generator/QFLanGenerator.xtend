@@ -356,11 +356,13 @@ public class «modelName» implements IQFlanModelBuilder{
 				'''
 				)
 				while (transitions.hasNext) {
+					//java.lang.ClassCastException: class it.imt.qFLan.impl.AskActionImpl cannot be cast to class it.imt.qFLan.StoreModifierActionOrReferenceToActionOrToFeature (it.imt.qFLan.impl.AskActionImpl and it.imt.qFLan.StoreModifierActionOrReferenceToActionOrToFeature are in unnamed module of loader org.eclipse.osgi.internal.loader.EquinoxClassLoader @34e113d3)
+					
 					var transition = transitions.next
 					sb.append("\t")
 					sb.append(
 						'''
-						«cleanStateName(transition.source.name)» -> «cleanStateName(getName(transition.target))» [label="«genAction(transition.action as StoreModifierActionOrReferenceToActionOrToFeature)»,«evalExpr(transition.rate) as double»"]
+						«cleanStateName(transition.source.name)» -> «cleanStateName(getName(transition.target))» [label="«genAction(transition.action as AskOrStoreModifierActionOrReferenceToActionOrToFeature)»,«evalExpr(transition.rate) as double»"]
 						'''
 					)
 				}
@@ -456,7 +458,7 @@ public class «modelName» implements IQFlanModelBuilder{
 			}
 	}
 		
-	def static genAction(StoreModifierActionOrReferenceToActionOrToFeature action) {
+	def static genAction(AskOrStoreModifierActionOrReferenceToActionOrToFeature action) {
 			if(action instanceof Action){
 				return cleanActionName(action.name)
 			}
@@ -485,6 +487,9 @@ public class «modelName» implements IQFlanModelBuilder{
 				else{
 					throw new UnsupportedOperationException("Unsupported action: " + action);
 				}
+			}
+			else if(action instanceof AskAction){
+				return '''ask(«visitConstraint(action.question)»)'''
 			}
 		}
 	

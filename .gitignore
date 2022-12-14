@@ -11,7 +11,7 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
+#*.jar
 *.war
 *.ear
 *.zip
@@ -21,6 +21,7 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 .DS_Store
+runtime-QFLan.product/
 ws418/uppaalwrapper/
 ws418/it.imt.qflan.xtext/xtend-gen/
 ws418/it.imt.qflan.xtext/src-gen/
