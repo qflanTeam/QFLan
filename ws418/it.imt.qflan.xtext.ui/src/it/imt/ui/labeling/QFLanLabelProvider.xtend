@@ -121,7 +121,8 @@ class QFLanLabelProvider extends DefaultEObjectLabelProvider {
 				for(eff : listOfEffects){
 					var name = eff.refToQFLanVar.getVarqflan.name
 					var expr = eff.value;
-					sb.append('''«name»=«text(expr)»)''')
+					sb.append(name+"="+text(expr))
+					//sb.append('''ï¿½nameï¿½=ï¿½text(expr)ï¿½)''')
 					if(i<size-1){
 						sb.append(",");
 					}
