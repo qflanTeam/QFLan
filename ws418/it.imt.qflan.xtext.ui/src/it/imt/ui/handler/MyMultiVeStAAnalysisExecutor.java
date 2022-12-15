@@ -175,7 +175,8 @@ public class MyMultiVeStAAnalysisExecutor {
 		consoleOut.println(MyConsoleUtil.computeWelcome(consoleOut));
 		
 		String workspacePath = project.getParent().getLocationURI().getPath();// .getFullPath().toOSString();
-	     //String oldParentPath = fullPathOfParent.toFile().getAbsolutePath();
+	    workspacePath = cleanWindowsPath(workspacePath);
+		//String oldParentPath = fullPathOfParent.toFile().getAbsolutePath();
 	     String parentPath = fullPathOfParent.toFile().getPath();
 	     String absoluteParentPath = workspacePath+parentPath;
 		
@@ -202,6 +203,7 @@ public class MyMultiVeStAAnalysisExecutor {
 		
 	     URI projectURI = project.getLocationURI();
 	     String projectPath=projectURI.getPath();
+	     projectPath=cleanWindowsPath(projectPath);
 	     
 	     //modelDef.getName();
 	     
@@ -341,6 +343,12 @@ public class MyMultiVeStAAnalysisExecutor {
 
 	    
 
+	}
+	private String cleanWindowsPath(String path) {
+		if(path.startsWith("/")&&path.contains(":")) {
+	    	path=path.substring(1);
+	    }
+		return path;
 	}
 	
 	private QFlanModel populateQFlanModel(ModelDefinition modelDef, MessageConsoleStream out) throws Z3Exception{

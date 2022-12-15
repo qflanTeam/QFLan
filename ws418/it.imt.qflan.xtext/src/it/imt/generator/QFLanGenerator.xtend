@@ -186,9 +186,9 @@ import it.imt.qflan.core.processes.actions.*;
 import it.imt.qflan.core.variables.QFLanVariable;
 import it.imt.qflan.core.variables.SideEffect;
 			
-public class Â«modelNameÂ» implements IQFlanModelBuilder{
+public class «modelName» implements IQFlanModelBuilder{
 	
-	public Â«modelNameÂ»(){
+	public «modelName»(){
 			System.out.println("Model builder instantiated");
 		}
 	
@@ -198,48 +198,48 @@ public class Â«modelNameÂ» implements IQFlanModelBuilder{
 		//////////////////
 		/////Variables////
 		//////////////////
-		Â«writeVariables(qflanVariables)Â»	
+		«writeVariables(qflanVariables)»	
 			
 		//////////////////
 		/////Features/////
 		//////////////////
-		Â«writeFeatures(abstractFeatures,concreteFeatures.iterator,relationsAmongFeatures)Â»
+		«writeFeatures(abstractFeatures,concreteFeatures.iterator,relationsAmongFeatures)»
 			
 		/////////////////////////////
 		////CrossTree Constraints////
 		/////////////////////////////
-		Â«writeCrossTreeConstraints(crossTreeConstraints)Â»	
+		«writeCrossTreeConstraints(crossTreeConstraints)»	
 			
 		//////////////////
 		////Predicates////
 		//////////////////
-		Â«writeFeaturePredicates(featurePredicates)Â»
+		«writeFeaturePredicates(featurePredicates)»
 		
 		////////////////////////////////
 		////Quantitative Constraints////
 		////////////////////////////////
-		Â«writeQuantitativeConstraints(quantitativeConstraints)Â»
+		«writeQuantitativeConstraints(quantitativeConstraints)»
 		
 		///////////////
 		////Actions////
 		///////////////
-		Â«writeActions(actions)Â»
+		«writeActions(actions)»
 		
 		//////////////////////////
 		////Action constraints////
 		//////////////////////////
-		Â«writeActionConstraints(actionConstraints,concreteFeatures.iterator)Â»		
+		«writeActionConstraints(actionConstraints,concreteFeatures.iterator)»		
 		
 		/////////////////////////////
 		////Processes definitions////
 		/////////////////////////////
-		Â«writeProcesses(processDefinitions)Â»
-		Â«writeProcessesOfDiagram(processesOfDiagram,nameOfProcessToNameOfFirstState)Â»
+		«writeProcesses(processDefinitions)»
+		«writeProcessesOfDiagram(processesOfDiagram,nameOfProcessToNameOfFirstState)»
 		
 		/////////////////////////////////////////////////
 		////Initially installed features and Process ////
 		/////////////////////////////////////////////////
-		Â«writeInit(initWithProcesses,initWithProcessesOfDiagram,hasProcessDiagram,nameOfProcessToNameOfFirstState)Â»
+		«writeInit(initWithProcesses,initWithProcessesOfDiagram,hasProcessDiagram,nameOfProcessToNameOfFirstState)»
 		model.resetToInitialState();
 		return model;		
 	}
@@ -298,8 +298,8 @@ public class Â«modelNameÂ» implements IQFlanModelBuilder{
  * https://dreampuf.github.io/GraphvizOnline/
  * https://edotor.net/
  */
-	digraph Â«modelNameÂ» {
-		Â«genStates(processDiagramsList.iterator)Â»
+	digraph «modelName» {
+		«genStates(processDiagramsList.iterator)»
 	}
 	'''
 	fileName=modelName + 'Attacker.dot';
@@ -333,7 +333,7 @@ public class Â«modelNameÂ» implements IQFlanModelBuilder{
 				var states = diagram.eAllContents.filter(typeof(ProcessState))
 				sb.append(
 				'''
-				subgraph Â«diagram.nameÂ» {
+				subgraph «diagram.name» {
 					//States
 					node [shape=box style=rounded color=blue penwidth=4.0]
 				'''
@@ -343,7 +343,7 @@ public class Â«modelNameÂ» implements IQFlanModelBuilder{
 					sb.append("\t")
 					sb.append(
 					'''
-					Â«cleanStateName(state.name)Â»
+					«cleanStateName(state.name)»
 					''')
 				}
 			
@@ -362,7 +362,7 @@ public class Â«modelNameÂ» implements IQFlanModelBuilder{
 					sb.append("\t")
 					sb.append(
 						'''
-						Â«cleanStateName(transition.source.name)Â» -> Â«cleanStateName(getName(transition.target))Â» [label="Â«genAction(transition.action as AskOrStoreModifierActionOrReferenceToActionOrToFeature)Â»,Â«evalExpr(transition.rate) as doubleÂ»"]
+						«cleanStateName(transition.source.name)» -> «cleanStateName(getName(transition.target))» [label="«genAction(transition.action as AskOrStoreModifierActionOrReferenceToActionOrToFeature)»,«evalExpr(transition.rate) as double»"]
 						'''
 					)
 				}
@@ -406,7 +406,7 @@ public class Â«modelNameÂ» implements IQFlanModelBuilder{
 					leftVisited = evalExpr(expr.left)
 					rightVisited = evalExpr(expr.right)
 				}
-				//return '''Â«leftVisitedÂ» + Â«rightVisitedÂ»'''
+				//return '''«leftVisited» + «rightVisited»'''
 				return leftVisited + rightVisited
 			}
 			else if(expr instanceof Subtraction || expr instanceof SubtractionWithPredicates){
@@ -418,7 +418,7 @@ public class Â«modelNameÂ» implements IQFlanModelBuilder{
 					leftVisited = evalExpr(expr.left)
 					rightVisited = evalExpr(expr.right)
 				}
-				//return '''Â«leftVisitedÂ» - Â«rightVisitedÂ»'''
+				//return '''«leftVisited» - «rightVisited»'''
 				return leftVisited - rightVisited
 			}
 			else if(expr instanceof Multiplication || expr instanceof MultiplicationWithPredicates){
@@ -430,7 +430,7 @@ public class Â«modelNameÂ» implements IQFlanModelBuilder{
 					leftVisited = evalExpr(expr.left)
 					rightVisited = evalExpr(expr.right)
 				}
-				//return '''Â«leftVisitedÂ» * Â«rightVisitedÂ»'''
+				//return '''«leftVisited» * «rightVisited»'''
 				return leftVisited * rightVisited
 			}
 			else if (expr instanceof Division) {
@@ -450,7 +450,7 @@ public class Â«modelNameÂ» implements IQFlanModelBuilder{
 				else if(expr instanceof MinusPrimaryWithPredicates){
 					leftVisited = evalExpr(expr.left)
 				}
-				//return '''-Â«leftVisitedÂ»'''
+				//return '''-«leftVisited»'''
 				return -leftVisited
 			}
 			else{
@@ -476,20 +476,20 @@ public class Â«modelNameÂ» implements IQFlanModelBuilder{
 			}
 			else if(action instanceof StoreModifierActions){
 				if(action instanceof InstallAction){
-					return '''install(Â«action.feature.nameÂ»)'''
+					return '''install(«action.feature.name»)'''
 				}
 				else if(action instanceof UninstallAction){
-					return '''uninstall(Â«action.feature.nameÂ»)'''
+					return '''uninstall(«action.feature.name»)'''
 				}
 				else if(action instanceof ReplaceAction){
-					return '''replace(Â«action.toRemove.nameÂ»,Â«action.toAdd.nameÂ»)'''
+					return '''replace(«action.toRemove.name»,«action.toAdd.name»)'''
 				}
 				else{
 					throw new UnsupportedOperationException("Unsupported action: " + action);
 				}
 			}
 			else if(action instanceof AskAction){
-				return '''ask(Â«visitConstraint(action.question)Â»)'''
+				return '''ask(«visitConstraint(action.question)»)'''
 			}
 		}
 	
@@ -506,14 +506,14 @@ public class Â«modelNameÂ» implements IQFlanModelBuilder{
 		if(hasProcessDiagram){
 			if(diagram!==null){
 				if(diagram.processes.size()==1){
-					ret='''model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», Â«nameOfProcessToNameOfFirstState.get(diagram.processes.get(0).name)Â»);'''
+					ret='''model.setInitialState(«listOfFeatures(diagram.installedFeatures)», «nameOfProcessToNameOfFirstState.get(diagram.processes.get(0).name)»);'''
 				}
 				else{
 					ret=
 '''
 ProcessDefinition initial= new ProcessDefinition("init");
-model.addProcessDefinition(initial, QFlanModel.makeMultiParallel(Â«listOfInitialProcesses(diagram.processes,nameOfProcessToNameOfFirstState)Â»));
-model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
+model.addProcessDefinition(initial, QFlanModel.makeMultiParallel(«listOfInitialProcesses(diagram.processes,nameOfProcessToNameOfFirstState)»));
+model.setInitialState(«listOfFeatures(diagram.installedFeatures)», initial);
 '''
 				}
 			}
@@ -521,7 +521,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 		else{
 			if(processes!==null){
 				var initialState=processes
-				ret='''model.setInitialState(Â«listOfFeatures(initialState.installedFeatures)Â», Â«initialState.initialProcess.nameÂ»);'''	
+				ret='''model.setInitialState(«listOfFeatures(initialState.installedFeatures)», «initialState.initialProcess.name»);'''	
 			}
 		}
 		return ret
@@ -548,9 +548,9 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 			var sbProcessBodies = new StringBuffer();
 			for(element : processDefinitions){
 				if(element.name!==null){
-					sbProcessDefs.append('''ProcessDefinition Â«element.nameÂ» = new ProcessDefinition("Â«element.nameÂ»");''')
+					sbProcessDefs.append('''ProcessDefinition «element.name» = new ProcessDefinition("«element.name»");''')
 					sbProcessDefs.append("\n")
-					sbProcessBodies.append('''model.addProcessDefinition(Â«element.nameÂ», Â«visitProcess(element.body)Â»);''')
+					sbProcessBodies.append('''model.addProcessDefinition(«element.name», «visitProcess(element.body)»);''')
 					sbProcessBodies.append("\n")	
 				}
 			}
@@ -573,7 +573,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 						first=false;
 					}
 					allStates.add(state.name)
-					sbProcessDefs.append('''ProcessDefinition Â«state.nameÂ» = new ProcessDefinition("Â«state.nameÂ»");''')
+					sbProcessDefs.append('''ProcessDefinition «state.name» = new ProcessDefinition("«state.name»");''')
 					sbProcessDefs.append("\n")
 				}
 				for(transition:process.transitions.transitions){
@@ -581,7 +581,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 					var action=writeActionIncludingAskOrStoreModifierOrFeature(transition.action);
 					var sideEffects=visitListOfSideEffects(transition.sideEffects);
 					var target=computeTarget(transition)
-					var prefix='''(IProcess)new Prefix(Â«rateÂ»,Â«actionÂ»,Â«sideEffectsÂ»,Â«targetÂ»)'''
+					var prefix='''(IProcess)new Prefix(«rate»,«action»,«sideEffects»,«target»)'''
 					var outgoing=stateToOutgoingTransitions.get(transition.source.name)
 					if(outgoing===null){
 						outgoing=new ArrayList<String>();
@@ -592,13 +592,13 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 				for(state : allStates){
 					var out = stateToOutgoingTransitions.get(state)
 					if(out===null){
-						sbProcessBodies.append('''model.addProcessDefinition(Â«stateÂ», ZeroProcess.ZERO);''')
+						sbProcessBodies.append('''model.addProcessDefinition(«state», ZeroProcess.ZERO);''')
 						sbProcessBodies.append("\n")
 					}
 					else{
 						var str = out.toString
 						str=str.substring(1,str.length-1)
-						sbProcessBodies.append('''model.addProcessDefinition(Â«stateÂ», QFlanModel.makeMultiChoice(Arrays.asList(Â«strÂ»)));''')
+						sbProcessBodies.append('''model.addProcessDefinition(«state», QFlanModel.makeMultiChoice(Arrays.asList(«str»)));''')
 						sbProcessBodies.append("\n")	
 					}
 				}
@@ -626,19 +626,19 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 			return '''ZeroProcess.ZERO'''
 		}
 		else if(process instanceof Prefix){
-			return '''new Prefix(Â«MyParserUtil.visitExpr(process.rate)Â», Â«writeActionIncludingAskOrStoreModifierOrFeature(process.action)Â», Â«visitListOfSideEffects(process.sideEffects)Â», Â«visitProcess(process.continuation)Â»)'''
+			return '''new Prefix(«MyParserUtil.visitExpr(process.rate)», «writeActionIncludingAskOrStoreModifierOrFeature(process.action)», «visitListOfSideEffects(process.sideEffects)», «visitProcess(process.continuation)»)'''
 		}
 		else if(process instanceof ReferenceToProcessDefinition){
-			return '''Â«process.value.nameÂ»'''
+			return '''«process.value.name»'''
 		}
 		else if(process instanceof Choice){
-			return '''new Choice(Â«visitProcess(process.first)Â», Â«visitProcess(process.second)Â»)'''
+			return '''new Choice(«visitProcess(process.first)», «visitProcess(process.second)»)'''
 		}
 		else if(process instanceof Sequential){
-			return '''new Sequential(Â«visitProcess(process.first)Â», Â«visitProcess(process.second)Â»)'''
+			return '''new Sequential(«visitProcess(process.first)», «visitProcess(process.second)»)'''
 		}
 		else if(process instanceof Parallel){
-			return '''new Parallel(Â«visitProcess(process.first)Â», Â«visitProcess(process.second)Â»)'''
+			return '''new Parallel(«visitProcess(process.first)», «visitProcess(process.second)»)'''
 		}
 		else if(process instanceof ProcessExpr){
 			return visitProcess(process.first)
@@ -659,7 +659,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 				for(eff : listOfEffects){
 					var name = eff.refToQFLanVar.getVarqflan.name
 					var expr = eff.value;
-					sb.append('''new SideEffect(Â«nameÂ»,Â«writeExpr(expr)Â»)''')
+					sb.append('''new SideEffect(«name»,«writeExpr(expr)»)''')
 					if(i<size-1){
 						sb.append(",");
 					}
@@ -676,7 +676,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 		sb.append("new String[]{");
 		for(element : effects.effects){
 			element.
-			sb.append('''new SideEffect(Â«element.getVariable()Â»,Â«visitExpr(element.value)Â»)''')
+			sb.append('''new SideEffect(«element.getVariable()»,«visitExpr(element.value)»)''')
 		}
 		sb.append("}");
 		return sb.toString;
@@ -685,7 +685,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 	def writeActionConstraints(EList<ActionRequires> actionConstraints, Iterator<ConcreteFeature> concreteFeatures) {
 		var sb = new StringBuffer();
 		for(element : actionConstraints){
-			sb.append('''model.addActionConstraint(Â«visitActionRequires(element)Â»);''')
+			sb.append('''model.addActionConstraint(«visitActionRequires(element)»);''')
 			sb.append("\n")
 		}
 		
@@ -694,7 +694,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 	
 		while(concreteFeatures.hasNext){
 			var element = concreteFeatures.next
-			sb.append('''//( do(Â«element.nameÂ») -> has(Â«element.nameÂ»))''')
+			sb.append('''//( do(«element.name») -> has(«element.name»))''')
 			sb.append("\n")
 		}
 		return sb.toString();
@@ -703,7 +703,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 	def writeCrossTreeConstraints(EList<CrossTreeConstraint> constraints){
 		var sb = new StringBuffer();
 		for(element : constraints){
-			sb.append('''model.addConstraint(Â«visitCrossTreeConstraint(element)Â»);''')	
+			sb.append('''model.addConstraint(«visitCrossTreeConstraint(element)»);''')	
 			sb.append("\n")
 		}
 		sb.append("\n")
@@ -712,7 +712,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 	def writeQuantitativeConstraints(EList<BoolExpr> constraints/* , Iterator<ConcreteFeature> concreteFeatures*/) {
 		var sb = new StringBuffer();
 		for(element : constraints){
-			sb.append('''model.addConstraint(Â«visitConstraint(element)Â»);''')
+			sb.append('''model.addConstraint(«visitConstraint(element)»);''')
 			sb.append("\n")
 		}
 		
@@ -721,7 +721,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 	
 		while(concreteFeatures.hasNext){
 			var element = concreteFeatures.next
-			sb.append('''//( do(Â«element.nameÂ») -> has(Â«element.nameÂ»))''')
+			sb.append('''//( do(«element.name») -> has(«element.name»))''')
 			sb.append("\n")
 		}*/
 		return sb.toString();
@@ -731,7 +731,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 		var sb = new StringBuffer();
 		while(constraints.hasNext){
 			var element = constraints.next
-			sb.append('''model.addConstraint(Â«visitConstraint(element)Â»);''')
+			sb.append('''model.addConstraint(«visitConstraint(element)»);''')
 			sb.append("\n")
 		}
 		return sb.toString();
@@ -777,7 +777,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 			//new ActionRequiresConstraint(sell, new DisequationOfPredicateExpressions(priceOfBike, new Constant(250), PredicateExprComparator.GE))
 			var writtenAction = writeActionIncludingStoreModifierOrFeature(constraint.action)
 			var writtenConstraint = visitConstraint(constraint.constraint)
-			return '''new ActionRequiresConstraint(Â«writtenActionÂ», Â«writtenConstraintÂ»)'''
+			return '''new ActionRequiresConstraint(«writtenAction», «writtenConstraint»)'''
 	}	
 		
 	def static getFeatureName(Feature feature){
@@ -791,28 +791,28 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 		
 	def visitCrossTreeConstraint(CrossTreeConstraint constraint) {
 		if(constraint instanceof FeatureRequires){
-			return '''new FeatureRequireConstraint(Â«getFeatureName(constraint.requirer)Â», Â«getFeatureName(constraint.required)Â»,model)'''
+			return '''new FeatureRequireConstraint(«getFeatureName(constraint.requirer)», «getFeatureName(constraint.required)»,model)'''
 		}
 		else if(constraint instanceof FeatureExcludes){
-			var features='''Arrays.asList((IFeature)Â«getFeatureName(constraint.first)Â»,(IFeature)Â«getFeatureName(constraint.second)Â»)''';
-		    return '''new FeatureSetConstraint(Â«featuresÂ», FeatureSetCondition.ATMOSTONE,model)''';
-			//return '''new FeatureExcludesConstraint(Â«getFeatureName(constraint.first)Â», Â«getFeatureName(constraint.second)Â»,model)'''
+			var features='''Arrays.asList((IFeature)«getFeatureName(constraint.first)»,(IFeature)«getFeatureName(constraint.second)»)''';
+		    return '''new FeatureSetConstraint(«features», FeatureSetCondition.ATMOSTONE,model)''';
+			//return '''new FeatureExcludesConstraint(«getFeatureName(constraint.first)», «getFeatureName(constraint.second)»,model)'''
 		} 
 	}	
 		
 	def static String visitConstraint(BoolExpr constraint) {
 		/*if(constraint instanceof FeatureRequires){
-			return '''new FeatureRequireConstraint(Â«constraint.requirer.nameÂ», Â«constraint.required.nameÂ»,model)'''
+			return '''new FeatureRequireConstraint(«constraint.requirer.name», «constraint.required.name»,model)'''
 		}*/
 		/*else if(constraint instanceof ActionRequires){
 			//'do' '(' action=SpecialActionOrReferenceToActionOrToFeature ')' '->' constraint=PrimaryBooleanConstraintExpr {ActionRequires.constraint=current}
 			//new ActionRequiresConstraint(sell, new DisequationOfPredicateExpressions(priceOfBike, new Constant(250), PredicateExprComparator.GE))
 			var writtenAction = writeActionIncludingSpecialOrFeature(constraint.action)
 			var writtenConstraint = visitConstraint(constraint.constraint)
-			return '''new ActionRequiresConstraint(Â«writtenActionÂ», Â«writtenConstraintÂ»)'''
+			return '''new ActionRequiresConstraint(«writtenAction», «writtenConstraint»)'''
 		}*/
 		if(constraint instanceof HasFeature){
-			return '''new HasFeature(Â«getFeatureName(constraint.feature)Â»,model)'''
+			return '''new HasFeature(«getFeatureName(constraint.feature)»,model)'''
 		}
 		else if(constraint instanceof FalseConstraint){
 			return '''new FalseConstraint()'''
@@ -821,16 +821,16 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 			return '''new TrueConstraint()'''
 		}
 		else if(constraint instanceof NotConstraintExpr){
-			return '''new NotConstraintExpr(Â«visitConstraint(constraint.left)Â»)'''
+			return '''new NotConstraintExpr(«visitConstraint(constraint.left)»)'''
 		}
 		else if(constraint instanceof AndBoolConstraintExpr){
-			return '''new BooleanConstraintExpr(Â«visitConstraint(constraint.left)Â»,Â«visitConstraint(constraint.right)Â»,BooleanConnector.AND)'''
+			return '''new BooleanConstraintExpr(«visitConstraint(constraint.left)»,«visitConstraint(constraint.right)»,BooleanConnector.AND)'''
 		}
 		else if(constraint instanceof OrBoolConstraintExpr){
-			return '''new BooleanConstraintExpr(Â«visitConstraint(constraint.left)Â»,Â«visitConstraint(constraint.right)Â»,BooleanConnector.OR)'''
+			return '''new BooleanConstraintExpr(«visitConstraint(constraint.left)»,«visitConstraint(constraint.right)»,BooleanConnector.OR)'''
 		}
 		else if(constraint instanceof ImpliesBoolConstraintExpr){
-			return '''new BooleanConstraintExpr(Â«visitConstraint(constraint.left)Â»,Â«visitConstraint(constraint.right)Â»,BooleanConnector.IMPLIES)'''
+			return '''new BooleanConstraintExpr(«visitConstraint(constraint.left)»,«visitConstraint(constraint.right)»,BooleanConnector.IMPLIES)'''
 		}
 		/*else if(constraint instanceof AtLeastOne){
 			//IConstraint atLeastOneWheel2 = new FeatureSetConstraint(Arrays.asList(allYear, summer, winter), FeatureSetCondition.ATLEASTONE,model);
@@ -856,13 +856,13 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 			else{
 				features = listOfFeatures(constraint.featuresSet)	
 			}
-			return '''new BooleanConstraintExpr(new FeatureSetConstraint(Â«featuresÂ», FeatureSetCondition.ATLEASTONE,model),new FeatureSetConstraint(Â«featuresÂ», FeatureSetCondition.ATMOSTONE,model),BooleanConnector.AND)''';
+			return '''new BooleanConstraintExpr(new FeatureSetConstraint(«features», FeatureSetCondition.ATLEASTONE,model),new FeatureSetConstraint(«features», FeatureSetCondition.ATMOSTONE,model),BooleanConnector.AND)''';
 		}*/
 		else if(constraint instanceof DisequationOfPredicateExpr){
 			//new DisequationOfPredicateExpressions(priceOfBike, new Constant(250), PredicateExprComparator.GE)
 			var writtenlhs = writeExpr(constraint.lhs)
 			var writtenrhs = writeExpr(constraint.rhs)
-			return '''new DisequationOfPredicateExpressions(Â«writtenlhsÂ»,Â«writtenrhsÂ»,Â«writeComparator(constraint.comp)Â»)''';
+			return '''new DisequationOfPredicateExpressions(«writtenlhs»,«writtenrhs»,«writeComparator(constraint.comp)»)''';
 		}
 		/*else{
 			throw new UnsupportedOperationException("Unsupported constraint: " + constraint);
@@ -874,10 +874,10 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 		var rightVisited = ""
 		var leftVisited = ""
 		if(expr instanceof NumberLiteral){
-			return '''new Constant(Â«expr.valueÂ»)'''
+			return '''new Constant(«expr.value»)'''
 		}
 		else if(expr instanceof RefToQFLanVariable){
-			return '''Â«expr.varqflan.nameÂ»'''
+			return '''«expr.varqflan.name»'''
 		}
 		else if(expr instanceof Predicate){
 			var f = expr.feature
@@ -888,7 +888,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 			else if(f instanceof ConcreteFeature){
 				fName=f.name;
 			} 
-			return '''new Predicate(Â«expr.predicate.nameÂ», Â«fNameÂ»)'''
+			return '''new Predicate(«expr.predicate.name», «fName»)'''
 		}
 		else if(expr instanceof Addition || expr instanceof AdditionWithPredicates){
 			if(expr instanceof Addition){
@@ -899,7 +899,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 				leftVisited = writeExpr(expr.left) as String
 				rightVisited = writeExpr(expr.right)  as String
 			}
-			return '''new ArithmeticPredicateExpr(Â«leftVisitedÂ»,Â«rightVisitedÂ»,ArithmeticOperation.SUM)'''
+			return '''new ArithmeticPredicateExpr(«leftVisited»,«rightVisited»,ArithmeticOperation.SUM)'''
 		}
 		else if(expr instanceof Subtraction || expr instanceof SubtractionWithPredicates){
 			if(expr instanceof Subtraction){
@@ -910,7 +910,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 				leftVisited = writeExpr(expr.left) as String
 				rightVisited = writeExpr(expr.right)  as String
 			}
-			return '''new ArithmeticPredicateExpr(Â«leftVisitedÂ»,Â«rightVisitedÂ»,ArithmeticOperation.SUB)'''
+			return '''new ArithmeticPredicateExpr(«leftVisited»,«rightVisited»,ArithmeticOperation.SUB)'''
 		}
 		else if(expr instanceof Multiplication || expr instanceof MultiplicationWithPredicates){
 			if(expr instanceof Multiplication){
@@ -921,7 +921,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 				leftVisited = writeExpr(expr.left) as String
 				rightVisited = writeExpr(expr.right)  as String
 			}
-			return '''new ArithmeticPredicateExpr(Â«leftVisitedÂ»,Â«rightVisitedÂ»,ArithmeticOperation.MULT)'''
+			return '''new ArithmeticPredicateExpr(«leftVisited»,«rightVisited»,ArithmeticOperation.MULT)'''
 		}
 		else if(expr instanceof MinusPrimary || expr instanceof MinusPrimaryWithPredicates){
 			if(expr instanceof MinusPrimary){
@@ -930,7 +930,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 			else if(expr instanceof MinusPrimaryWithPredicates){
 				leftVisited = writeExpr(expr.left) as String
 			}
-			return '''new ArithmeticPredicateExpr(new Constant(0),Â«leftVisitedÂ»,ArithmeticOperation.SUB)'''
+			return '''new ArithmeticPredicateExpr(new Constant(0),«leftVisited»,ArithmeticOperation.SUB)'''
 		}
 		else{
 			throw new UnsupportedOperationException("Unsupported expression: " + expr.toString());
@@ -942,7 +942,7 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 			return writeActionIncludingStoreModifierOrFeature(action)
 		}
 		else if(action instanceof AskAction){
-				return '''new AskAction(Â«visitConstraint(action.question)Â»)'''
+				return '''new AskAction(«visitConstraint(action.question)»)'''
 		}
 		else{
 			throw new UnsupportedOperationException("Unsupported action: " + action);
@@ -973,16 +973,16 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 			new AskAction(constraint) 
 			new ReplaceAction(ConcreteFeature toRemove, ConcreteFeature toAdd)*/
 			if(action instanceof InstallAction){
-				return '''new InstallAction(Â«action.feature.nameÂ»,true)'''
+				return '''new InstallAction(«action.feature.name»,true)'''
 			}
 			else if(action instanceof UninstallAction){
-				return '''new InstallAction(Â«action.feature.nameÂ»,false)'''
+				return '''new InstallAction(«action.feature.name»,false)'''
 			}
 			else if(action instanceof ReplaceAction){
-				return '''new ReplaceAction(Â«action.toRemove.nameÂ»,Â«action.toAdd.nameÂ»)'''
+				return '''new ReplaceAction(«action.toRemove.name»,«action.toAdd.name»)'''
 			}
 			/*else if(action instanceof AskAction){
-				return '''new AskAction(Â«visitConstraint(action.question)Â»)'''
+				return '''new AskAction(«visitConstraint(action.question)»)'''
 			}*/
 			else{
 				throw new UnsupportedOperationException("Unsupported action: " + action);
@@ -1024,12 +1024,12 @@ model.setInitialState(Â«listOfFeatures(diagram.installedFeatures)Â», initial);
 			var element = predicates.next
 			var predicateName =element.name
 			sb.append('''
-IPredicateDef Â«predicateNameÂ» = new PredicateDef("Â«predicateNameÂ»");
-model.addPredicateDef(Â«predicateNameÂ»);
+IPredicateDef «predicateName» = new PredicateDef("«predicateName»");
+model.addPredicateDef(«predicateName»);
 ''')
 			for(FeaturePredicateValue featureAndValue : element.values){
 				//Here I need matheval 
-				sb.append('''Â«predicateNameÂ».setValue(Â«featureAndValue.feature.nameÂ»,Â«MyParserUtil.visitExpr(featureAndValue.value)Â»);''')
+				sb.append('''«predicateName».setValue(«featureAndValue.feature.name»,«MyParserUtil.visitExpr(featureAndValue.value)»);''')
 				sb.append("\n")
 			}
 			sb.append("\n")
@@ -1047,8 +1047,8 @@ model.addPredicateDef(Â«predicateNameÂ»);
 			var element = abstractFeatures.next
 			sb.append(
 '''
-AbstractFeature Â«element.nameÂ» = new AbstractFeature("Â«element.nameÂ»");
-model.addAbstractFeatureDefinition(Â«element.nameÂ»);
+AbstractFeature «element.name» = new AbstractFeature("«element.name»");
+model.addAbstractFeatureDefinition(«element.name»);
 '''
 )
 		}
@@ -1059,8 +1059,8 @@ model.addAbstractFeatureDefinition(Â«element.nameÂ»);
 			var element = concreteFeatures.next
 			sb.append(
 '''
-ConcreteFeature Â«element.nameÂ» = new ConcreteFeature("Â«element.nameÂ»");
-model.addConcreteFeatureDefinition(Â«element.nameÂ»);
+ConcreteFeature «element.name» = new ConcreteFeature("«element.name»");
+model.addConcreteFeatureDefinition(«element.name»);
 '''
 )
 		}
@@ -1109,12 +1109,12 @@ model.addConcreteFeatureDefinition(Â«element.nameÂ»);
 			else if(son instanceof ConcreteFeature){
 				sonName = son.name
 			}
-			sb.append('''Â«fatherÂ».addSon(Â«sonNameÂ»);''')
+			sb.append('''«father».addSon(«sonName»);''')
 			sb.append("\n")
 			if(mandatory){
-				sb.append('''Â«sonNameÂ».setOptional(false);''')
+				sb.append('''«sonName».setOptional(false);''')
 				sb.append("\n")
-				hierarchicalConstraints.add('''model.addConstraint(new HasFeature(Â«sonNameÂ»,model,true));''');
+				hierarchicalConstraints.add('''model.addConstraint(new HasFeature(«sonName»,model,true));''');
 			}
 		}
 		sb.append("\n")
@@ -1124,24 +1124,24 @@ model.addConcreteFeatureDefinition(Â«element.nameÂ»);
 		var father =relation.father.name
 		for(Feature son : relation.sonsSet.features){
 			var sonName = getFeatureName(son)
-			sb.append('''Â«fatherÂ».addSon(Â«sonNameÂ»);''')
+			sb.append('''«father».addSon(«sonName»);''')
 			sb.append("\n")
 		}
 		sb.append("\n")
 		var features=listOfFeatures(relation.sonsSet)
-		hierarchicalConstraints.add('''model.addConstraint(new Alternative_OrConstraint(Â«fatherÂ»,Â«featuresÂ», Alternative_ORCondition.OR,model));''');
+		hierarchicalConstraints.add('''model.addConstraint(new Alternative_OrConstraint(«father»,«features», Alternative_ORCondition.OR,model));''');
 	}
 	
 	def writeXORRelationAmongFeatures(XORFatherAndSons relation,StringBuffer sb,ArrayList<String> hierarchicalConstraints){
 		var father =relation.father.name
 		for(Feature son : relation.sonsSet.features){
 			var sonName = getFeatureName(son)
-			sb.append('''Â«fatherÂ».addSon(Â«sonNameÂ»);''')
+			sb.append('''«father».addSon(«sonName»);''')
 			sb.append("\n")
 		}
 		sb.append("\n")
 		var features=listOfFeatures(relation.sonsSet)
-		hierarchicalConstraints.add('''model.addConstraint(new Alternative_OrConstraint(Â«fatherÂ»,Â«featuresÂ», Alternative_ORCondition.XOR,model));''');
+		hierarchicalConstraints.add('''model.addConstraint(new Alternative_OrConstraint(«father»,«features», Alternative_ORCondition.XOR,model));''');
 	}
 	
 	/*
@@ -1153,8 +1153,8 @@ model.addConcreteFeatureDefinition(Â«element.nameÂ»);
 			var element = abstractFeatures.next
 			sb.append(
 '''
-AbstractFeature Â«element.nameÂ» = new AbstractFeature("Â«element.nameÂ»");
-model.addAbstractFeatureDefinition(Â«element.nameÂ»);
+AbstractFeature «element.name» = new AbstractFeature("«element.name»");
+model.addAbstractFeatureDefinition(«element.name»);
 '''
 )
 		}
@@ -1165,8 +1165,8 @@ model.addAbstractFeatureDefinition(Â«element.nameÂ»);
 			var element = concreteFeatures.next
 			sb.append(
 '''
-ConcreteFeature Â«element.nameÂ» = new ConcreteFeature("Â«element.nameÂ»");
-model.addConcreteFeatureDefinition(Â«element.nameÂ»);
+ConcreteFeature «element.name» = new ConcreteFeature("«element.name»");
+model.addConcreteFeatureDefinition(«element.name»);
 '''
 )
 		}
@@ -1191,10 +1191,10 @@ model.addConcreteFeatureDefinition(Â«element.nameÂ»);
 				else if(son instanceof ConcreteFeature){
 					sonName = son.name
 				}
-				sb.append('''Â«fatherÂ».addSon(Â«sonNameÂ»);''')
+				sb.append('''«father».addSon(«sonName»);''')
 				sb.append("\n")
 				if(mandatory){
-					sb.append('''model.addConstraint(new HasFeature(Â«sonNameÂ»,model));''')
+					sb.append('''model.addConstraint(new HasFeature(«sonName»,model));''')
 					sb.append("\n")
 				}
 			}
@@ -1211,11 +1211,11 @@ model.addConcreteFeatureDefinition(Â«element.nameÂ»);
 				else if(son instanceof ConcreteFeature){
 					sonName = son.name
 				}
-				sb.append('''Â«fatherÂ».addSon(Â«sonNameÂ»);''')
+				sb.append('''«father».addSon(«sonName»);''')
 				sb.append("\n")
 			}
 			var features=listOfFeatures(relation.sonsSet)
-			sb.append('''model.addConstraint(new FeatureSetConstraint(Â«featuresÂ», FeatureSetCondition.ATLEASTONE,model));''');
+			sb.append('''model.addConstraint(new FeatureSetConstraint(«features», FeatureSetCondition.ATLEASTONE,model));''');
 			sb.append("\n")
 			sb.append("\n")
 		}
@@ -1230,11 +1230,11 @@ model.addConcreteFeatureDefinition(Â«element.nameÂ»);
 				else if(son instanceof ConcreteFeature){
 					sonName = son.name
 				}
-				sb.append('''Â«fatherÂ».addSon(Â«sonNameÂ»);''')
+				sb.append('''«father».addSon(«sonName»);''')
 				sb.append("\n")
 			}
 			var features=listOfFeatures(relation.sonsSet)
-			sb.append('''model.addConstraint(new BooleanConstraintExpr(new FeatureSetConstraint(Â«featuresÂ», FeatureSetCondition.ATLEASTONE,model),new FeatureSetConstraint(Â«featuresÂ», FeatureSetCondition.ATMOSTONE,model),BooleanConnector.AND));\n''');
+			sb.append('''model.addConstraint(new BooleanConstraintExpr(new FeatureSetConstraint(«features», FeatureSetCondition.ATLEASTONE,model),new FeatureSetConstraint(«features», FeatureSetCondition.ATMOSTONE,model),BooleanConnector.AND));\n''');
 			sb.append("\n")
 		}
 		
@@ -1248,8 +1248,8 @@ model.addConcreteFeatureDefinition(Â«element.nameÂ»);
 			var action = actions.next
 			sb.append(
 '''
-NormalAction Â«action.nameÂ» = new NormalAction("Â«action.nameÂ»");
-model.addNormalAction(Â«action.nameÂ»);
+NormalAction «action.name» = new NormalAction("«action.name»");
+model.addNormalAction(«action.name»);
 '''
 )
 		}
@@ -1263,10 +1263,10 @@ model.addNormalAction(Â«action.nameÂ»);
 			var variable = variables.next
 			sb.append(
 /*'''
-QFLanVariable Â«variable.nameÂ» = model.addVariable("Â«variable.nameÂ»", "Â«MyParserUtil.visitExpr(variable.value)Â»");
+QFLanVariable «variable.name» = model.addVariable("«variable.name»", "«MyParserUtil.visitExpr(variable.value)»");
 '''*/
 '''
-QFLanVariable Â«variable.nameÂ» = model.addVariable("Â«variable.nameÂ»", Â«writeExpr(variable.value)Â»);
+QFLanVariable «variable.name» = model.addVariable("«variable.name»", «writeExpr(variable.value)»);
 '''
 )
 		}
