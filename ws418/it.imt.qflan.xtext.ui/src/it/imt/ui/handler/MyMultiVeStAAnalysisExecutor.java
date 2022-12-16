@@ -182,7 +182,7 @@ public class MyMultiVeStAAnalysisExecutor {
 		
 		while(!librariesPresent){
 			try {
-				checkLibraries();
+				checkLibraries(consoleOut);
 			} catch (IOException e) {
 				NewVesta.printStackTrace(consoleOut,e);
 			}
@@ -345,7 +345,25 @@ public class MyMultiVeStAAnalysisExecutor {
 
 	}
 	private String cleanWindowsPath(String path) {
-		if(path.startsWith("/")&&path.contains(":")) {
+		
+    	String osName = System.getProperty("os.name");
+    	boolean win=false;
+    	@SuppressWarnings("unused")
+		boolean lin=false;
+    	@SuppressWarnings("unused")    	
+    	boolean mac=false;
+    	if(osName.contains("Windows")||osName.contains("Linux")||osName.contains("Mac")){
+    		if(osName.contains("Windows")){
+    			win=true;
+    		}
+    		else if(osName.contains("Linux")){
+    			lin=true;
+    		}
+    		else{
+    			mac=true;
+    		}
+    	}
+		if(win&& path.startsWith("/")&&path.contains(":")) {
 	    	path=path.substring(1);
 	    }
 		return path;
@@ -1401,7 +1419,7 @@ public class MyMultiVeStAAnalysisExecutor {
 	}
 
 	
-    private void checkLibraries() throws IOException {
+    private void checkLibraries(MessageConsoleStream out) throws IOException {
     	/*
     	String osName = System.getProperty("os.name");
     	boolean win=false;
@@ -1461,7 +1479,9 @@ public class MyMultiVeStAAnalysisExecutor {
     		String linkShort="";
     		//link= "https://dl.dropboxusercontent.com/u/18840437/qflan/multivestaQFLan.jar?dl=1";
     		//link = "https://www.dropbox.com/s/kodox600mqyg7pv/multivestaQFLan.jar?dl=1";
-    		link = "https://www.dropbox.com/s/yj46t7c9urq8n2q/multivestaQFLan.jar?dl=1";
+    		//link = "https://www.dropbox.com/s/yj46t7c9urq8n2q/multivestaQFLan.jar?dl=1";
+    		link= "https://github.com/qflanTeam/QFLan/ws418/it.imt.qflan.core/distr/multivestaQFLan.jar";
+    		NewVesta.println(out, "The jar can be found at:\n"+link);
     		linkShort=libraryFileName; 
     		/*String OS = "";
     			if(mac){

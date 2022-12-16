@@ -33,6 +33,8 @@ public class ImportBNGWizard  extends Wizard implements IImportWizard  {
     private IStructuredSelection selection;
 
     private WizardImportBNGCreationPage mainPage;
+
+	//private MessageConsoleStream out;
     
     private static boolean librariesPresent=false;
 	protected static String jarPath="";

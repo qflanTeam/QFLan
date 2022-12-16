@@ -151,7 +151,7 @@ public class MissingQflanCoreJarDialog2 extends Dialog {
 		@Override
 		public void widgetSelected(SelectionEvent e) {
 			FileDialog dialog = new FileDialog(getShell());//display.getActiveShell()
-			dialog.setFilterExtensions(new String[]{"jar"});
+			//dialog.setFilterExtensions(new String[]{"jar"});
 			dialog.setOverwrite(false);
 			String absFileName = dialog.open();
 	        if(absFileName!=null){
