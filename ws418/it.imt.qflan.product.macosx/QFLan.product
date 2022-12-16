@@ -68,7 +68,7 @@
    </configurations>
 
    <repositories>
-      <repository location="http://github.com/IMTAltiStudiLucca/QFLAN-updatesites/raw/master/repository-macosx" enabled="true" />
+      <repository location="http://github.com/qflanTeam/QFLan/raw/master/ws418/it.imt.qflan.core/distr/macosx/repository/" enabled="true" />
    </repositories>
 
    <preferencesInfo>
