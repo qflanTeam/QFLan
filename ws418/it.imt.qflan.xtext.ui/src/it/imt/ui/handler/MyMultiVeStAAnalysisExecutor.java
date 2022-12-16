@@ -1480,7 +1480,7 @@ public class MyMultiVeStAAnalysisExecutor {
     		//link= "https://dl.dropboxusercontent.com/u/18840437/qflan/multivestaQFLan.jar?dl=1";
     		//link = "https://www.dropbox.com/s/kodox600mqyg7pv/multivestaQFLan.jar?dl=1";
     		//link = "https://www.dropbox.com/s/yj46t7c9urq8n2q/multivestaQFLan.jar?dl=1";
-    		link= "https://github.com/qflanTeam/QFLan/ws418/it.imt.qflan.core/distr/multivestaQFLan.jar";
+    		link= "https://github.com/qflanTeam/QFLan/raw/master/ws418/it.imt.qflan.core/distr/multivestaQFLan.jar";
     		NewVesta.println(out, "The jar can be found at:\n"+link);
     		linkShort=libraryFileName; 
     		/*String OS = "";

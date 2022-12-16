@@ -68,7 +68,7 @@
    </configurations>
 
    <repositories>
-      <repository location="http://github.com/IMTAltiStudiLucca/QFLAN-updatesites/raw/master/repository-win64/" enabled="true" />
+      <repository location="http://github.com/qflanTeam/QFLan/raw/master/ws418/it.imt.qflan.core/distr/win/repository/" enabled="true" />
    </repositories>
 
    <preferencesInfo>
