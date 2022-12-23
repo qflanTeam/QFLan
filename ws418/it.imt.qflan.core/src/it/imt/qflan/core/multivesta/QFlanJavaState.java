@@ -52,6 +52,7 @@ public class QFlanJavaState extends NewState {
 	public static long TOTALCOMPUTATIONCOMMITMENTS;
 	public static long TOTALCHOICEOFCOMMITMENT;
 	public static long TOTALAPPLICATIONOFCOMMITMENT;
+	private LinkedHashMap<String, String> latestCaptionToValue;
 	
 	//private String jarPath;
 
@@ -373,6 +374,20 @@ public class QFlanJavaState extends NewState {
 		return captionToValue;
 	}
 	
+	@Override
+	public void noMoreStepsNecessary() {
+		super.noMoreStepsNecessary();
+		addSimulationTerminatedToLog();
+	}
+	private void addSimulationTerminatedToLog() {
+		if(toLog && latestCaptionToValue!=null) {
+			latestCaptionToValue.put("activity", "simulationTerminated");
+			addRowToLog(latestCaptionToValue);
+			latestCaptionToValue=null;
+		}
+	}
+
+	
 	private void addRowToLog(LinkedHashMap<String, String> captionToValue) {
 		StringBuffer row = new StringBuffer();
 		for(Entry<String, String> entry:captionToValue.entrySet()) {
@@ -428,6 +443,8 @@ public class QFlanJavaState extends NewState {
 		}
 		
 		//activity is add outside
+		
+		latestCaptionToValue=captionToValue;
 		
 		return captionToValue;
 	}

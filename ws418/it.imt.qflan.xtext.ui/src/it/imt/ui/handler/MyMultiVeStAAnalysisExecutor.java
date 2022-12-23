@@ -180,6 +180,14 @@ public class MyMultiVeStAAnalysisExecutor {
 	     String parentPath = fullPathOfParent.toFile().getPath();
 	     String absoluteParentPath = workspacePath+parentPath;
 		
+	     String newJarPath=modelDef.getJarPath();
+			if(newJarPath!=null) {
+				if(newJarPath.length()>0)
+				newJarPath = MyParserUtil.computeFileName(newJarPath, absoluteParentPath);
+				setNewJar(newJarPath);
+			} 
+	     
+	     
 		while(!librariesPresent){
 			try {
 				checkLibraries(consoleOut);
@@ -344,6 +352,11 @@ public class MyMultiVeStAAnalysisExecutor {
 	    
 
 	}
+	private void setNewJar(String pathToJar) {
+		MessageDialogShower.updateJarFileLocation(pathToJar);
+	}
+	
+	
 	private String cleanWindowsPath(String path) {
 		
     	String osName = System.getProperty("os.name");
