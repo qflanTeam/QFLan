@@ -155,7 +155,7 @@ class QFLanGenerator extends AbstractGenerator {
 			} 
 		}
 		
-		var processDiagramsList = resource.allContents.filter(typeof(ProcessOfDiagram)).toList
+		//var processDiagramsList = resource.allContents.filter(typeof(ProcessOfDiagram)).toList
 		/*var processDiagram = resource.allContents.filter(typeof(ProcessDiagram));
 		var EList<ProcessOfDiagram> processesOfDiagram = null;
 		if(hasProcessDiagram && processDiagram!==null && processDiagram.size>0){
@@ -292,27 +292,29 @@ public class «modelName» implements IQFlanModelBuilder{
 		//TODO
 		//var AttackTree=...
 	
-	var fileName=modelName + 'ProProcess.dot';	
-	var ProbProcess=
-	'''
+	if(hasProcessDiagram){
+		var fileName=modelName + '_ProbProcess.dot';	
+		var ProbProcess=
+		'''
 /* Open in your favourite Graphviz viewer, e.g.
  * https://dreampuf.github.io/GraphvizOnline/
  * https://edotor.net/
  */
 	digraph «modelName» {
-		«genStates(processDiagramsList.iterator)»
+		«genStates(/*processDiagramsList.iterator,*/initWithProcessesOfDiagram,nameOfProcessToNameOfFirstState)»
 	}
-	'''
-	fileName=modelName + 'Attacker.dot';
-	fsa.generateFile(fileName, ProbProcess)
-	MyParserUtil.generateFigure(new StringInputStream(ProbProcess),modelName + 'Process',resource)
-		
-		/*fsa.generateFile(modelName+'.java', 
-			'All defined actions: ' + 
-			resource.allContents
-				.filter(typeof(Action))
-				.map[name]
-				.join(', '))*/
+'''
+		fsa.generateFile(fileName, ProbProcess)
+		MyParserUtil.generateFigure(new StringInputStream(ProbProcess),modelName + 'Process',resource)
+			
+			/*fsa.generateFile(modelName+'.java', 
+				'All defined actions: ' + 
+				resource.allContents
+					.filter(typeof(Action))
+					.map[name]
+					.join(', '))*/
+		}
+	
 	}
 	
 	def cleanStateName(ProcessState state){
@@ -327,10 +329,11 @@ public class «modelName» implements IQFlanModelBuilder{
 		return cleanedName
 	}
 	
-	def genStates(Iterator<ProcessOfDiagram> attackDiagrams) {
+	def genStates(/*Iterator<ProcessOfDiagram> attackDiagrams,*/InitWithProcessDiagram initWithProcessesOfDiagram,LinkedHashMap<String, String> nameOfProcessToNameOfFirstState) {
 			var sb = new StringBuffer()
-			while (attackDiagrams.hasNext) {
-				var diagram = attackDiagrams.next
+			for (ProcessOfDiagram diagram : initWithProcessesOfDiagram.processes){
+			//while (attackDiagrams.hasNext) {
+				//var diagram = attackDiagrams.next
 				var states = diagram.eAllContents.filter(typeof(ProcessState))
 				sb.append(
 				'''
@@ -369,8 +372,26 @@ public class «modelName» implements IQFlanModelBuilder{
 				}
 				sb.append("}\n")			
 			}
-
 			
+			sb.append("{\n");
+			sb.append(" rank = same;\n");
+			sb.append(" // Here you enforce the desired order with 'invisible' edges and arrowheads\n");
+			sb.append(" edge[ style=invis];\n");
+			sb.append(" ");
+			for(var d=0;d<initWithProcessesOfDiagram.processes.size;d++){
+				var diagram=initWithProcessesOfDiagram.processes.get(d);
+				var nameFirstState= nameOfProcessToNameOfFirstState.get(diagram.name)
+				sb.append(nameFirstState);
+				if(d<initWithProcessesOfDiagram.processes.size-1){
+					sb.append(" -> ");
+				}
+			}
+			sb.append(";\n");
+			for (ProcessOfDiagram diagram : initWithProcessesOfDiagram.processes){
+				
+			}
+			sb.append(" rankdir = LR;\n");
+			sb.append("}\n");
 			return sb.toString
 		}
 		
@@ -490,7 +511,7 @@ public class «modelName» implements IQFlanModelBuilder{
 				}
 			}
 			else if(action instanceof AskAction){
-				return '''ask(«visitConstraint(action.question)»)'''
+				return '''ask(«visitConstraint(action.question,false)»)'''
 			}
 		}
 	
@@ -660,7 +681,7 @@ model.setInitialState(«listOfFeatures(diagram.installedFeatures)», initial);
 				for(eff : listOfEffects){
 					var name = eff.refToQFLanVar.getVarqflan.name
 					var expr = eff.value;
-					sb.append('''new SideEffect(«name»,«writeExpr(expr)»)''')
+					sb.append('''new SideEffect(«name»,«writeExpr(expr,true)»)''')
 					if(i<size-1){
 						sb.append(",");
 					}
@@ -713,7 +734,7 @@ model.setInitialState(«listOfFeatures(diagram.installedFeatures)», initial);
 	def writeQuantitativeConstraints(EList<BoolExpr> constraints/* , Iterator<ConcreteFeature> concreteFeatures*/) {
 		var sb = new StringBuffer();
 		for(element : constraints){
-			sb.append('''model.addConstraint(«visitConstraint(element)»);''')
+			sb.append('''model.addConstraint(«visitConstraint(element,true)»);''')
 			sb.append("\n")
 		}
 		
@@ -777,7 +798,7 @@ model.setInitialState(«listOfFeatures(diagram.installedFeatures)», initial);
 		//'do' '(' action=SpecialActionOrReferenceToActionOrToFeature ')' '->' constraint=PrimaryBooleanConstraintExpr {ActionRequires.constraint=current}
 			//new ActionRequiresConstraint(sell, new DisequationOfPredicateExpressions(priceOfBike, new Constant(250), PredicateExprComparator.GE))
 			var writtenAction = writeActionIncludingStoreModifierOrFeature(constraint.action)
-			var writtenConstraint = visitConstraint(constraint.constraint)
+			var writtenConstraint = visitConstraint(constraint.constraint,true)
 			return '''new ActionRequiresConstraint(«writtenAction», «writtenConstraint»)'''
 	}	
 		
@@ -800,8 +821,8 @@ model.setInitialState(«listOfFeatures(diagram.installedFeatures)», initial);
 			//return '''new FeatureExcludesConstraint(«getFeatureName(constraint.first)», «getFeatureName(constraint.second)»,model)'''
 		} 
 	}	
-		
-	def static String visitConstraint(BoolExpr constraint) {
+	
+	def static String visitConstraint(BoolExpr constraint,boolean java) {
 		/*if(constraint instanceof FeatureRequires){
 			return '''new FeatureRequireConstraint(«constraint.requirer.name», «constraint.required.name»,model)'''
 		}*/
@@ -813,25 +834,46 @@ model.setInitialState(«listOfFeatures(diagram.installedFeatures)», initial);
 			return '''new ActionRequiresConstraint(«writtenAction», «writtenConstraint»)'''
 		}*/
 		if(constraint instanceof HasFeature){
-			return '''new HasFeature(«getFeatureName(constraint.feature)»,model)'''
+			if(java)
+				return '''new HasFeature(«getFeatureName(constraint.feature)»,model)'''
+			else
+				return '''has(«getFeatureName(constraint.feature)»)'''
 		}
 		else if(constraint instanceof FalseConstraint){
-			return '''new FalseConstraint()'''
+			if(java)
+				return '''new FalseConstraint()'''
+			else
+				return "false"
 		}
 		else if(constraint instanceof TrueConstraint){
-			return '''new TrueConstraint()'''
+			if(java)
+				return '''new TrueConstraint()'''
+			else
+				return "true"
 		}
 		else if(constraint instanceof NotConstraintExpr){
-			return '''new NotConstraintExpr(«visitConstraint(constraint.left)»)'''
+			if(java)
+				return '''new NotConstraintExpr(«visitConstraint(constraint.left,java)»)'''
+			else
+				return '''!(«visitConstraint(constraint.left,java)»)'''
 		}
 		else if(constraint instanceof AndBoolConstraintExpr){
-			return '''new BooleanConstraintExpr(«visitConstraint(constraint.left)»,«visitConstraint(constraint.right)»,BooleanConnector.AND)'''
+			if(java)
+				return '''new BooleanConstraintExpr(«visitConstraint(constraint.left,java)»,«visitConstraint(constraint.right,java)»,BooleanConnector.AND)'''
+			else
+				return '''(«visitConstraint(constraint.left,java)»)and(«visitConstraint(constraint.right,java)»)'''
 		}
 		else if(constraint instanceof OrBoolConstraintExpr){
-			return '''new BooleanConstraintExpr(«visitConstraint(constraint.left)»,«visitConstraint(constraint.right)»,BooleanConnector.OR)'''
+			if(java)
+				return '''new BooleanConstraintExpr(«visitConstraint(constraint.left,java)»,«visitConstraint(constraint.right,java)»,BooleanConnector.OR)'''
+			else
+				return '''((«visitConstraint(constraint.left,java)»)or(«visitConstraint(constraint.right,java)»))'''
 		}
 		else if(constraint instanceof ImpliesBoolConstraintExpr){
-			return '''new BooleanConstraintExpr(«visitConstraint(constraint.left)»,«visitConstraint(constraint.right)»,BooleanConnector.IMPLIES)'''
+			if(java)
+				return '''new BooleanConstraintExpr(«visitConstraint(constraint.left,java)»,«visitConstraint(constraint.right,java)»,BooleanConnector.IMPLIES)'''
+			else
+				return '''((«visitConstraint(constraint.left,java)»)->(«visitConstraint(constraint.right,java)»))'''
 		}
 		/*else if(constraint instanceof AtLeastOne){
 			//IConstraint atLeastOneWheel2 = new FeatureSetConstraint(Arrays.asList(allYear, summer, winter), FeatureSetCondition.ATLEASTONE,model);
@@ -861,21 +903,28 @@ model.setInitialState(«listOfFeatures(diagram.installedFeatures)», initial);
 		}*/
 		else if(constraint instanceof DisequationOfPredicateExpr){
 			//new DisequationOfPredicateExpressions(priceOfBike, new Constant(250), PredicateExprComparator.GE)
-			var writtenlhs = writeExpr(constraint.lhs)
-			var writtenrhs = writeExpr(constraint.rhs)
-			return '''new DisequationOfPredicateExpressions(«writtenlhs»,«writtenrhs»,«writeComparator(constraint.comp)»)''';
+			var writtenlhs = writeExpr(constraint.lhs,java)
+			var writtenrhs = writeExpr(constraint.rhs,java)
+			if(java)
+				return '''new DisequationOfPredicateExpressions(«writtenlhs»,«writtenrhs»,«writeComparator(constraint.comp)»)'''
+			else
+				return '''((«writtenlhs»)«constraint.comp»(«writtenrhs»))''';
 		}
-		/*else{
-			throw new UnsupportedOperationException("Unsupported constraint: " + constraint);
-		}*/
-		return ""
+//		else{
+//			throw new UnsupportedOperationException("Unsupported constraint: " + constraint);
+//		}
+		return "";
 	}
 	
-	def static String writeExpr(Expression expr) {
+	
+	def static String writeExpr(Expression expr,boolean java) {
 		var rightVisited = ""
 		var leftVisited = ""
 		if(expr instanceof NumberLiteral){
-			return '''new Constant(«expr.value»)'''
+			if(java)
+				return '''new Constant(«expr.value»)'''
+			else 
+				return '''«expr.value»'''
 		}
 		else if(expr instanceof RefToQFLanVariable){
 			return '''«expr.varqflan.name»'''
@@ -889,49 +938,64 @@ model.setInitialState(«listOfFeatures(diagram.installedFeatures)», initial);
 			else if(f instanceof ConcreteFeature){
 				fName=f.name;
 			} 
-			return '''new Predicate(«expr.predicate.name», «fName»)'''
+			if(java)
+				return '''new Predicate(«expr.predicate.name», «fName»)'''
+			else
+				return '''«expr.predicate.name»(«fName»)'''
 		}
 		else if(expr instanceof Addition || expr instanceof AdditionWithPredicates){
 			if(expr instanceof Addition){
-				leftVisited = writeExpr(expr.left) as String
-				rightVisited = writeExpr(expr.right)  as String
+				leftVisited = writeExpr(expr.left,java) as String
+				rightVisited = writeExpr(expr.right,java)  as String
 			}
 			else if(expr instanceof AdditionWithPredicates){
-				leftVisited = writeExpr(expr.left) as String
-				rightVisited = writeExpr(expr.right)  as String
+				leftVisited = writeExpr(expr.left,java) as String
+				rightVisited = writeExpr(expr.right,java)  as String
 			}
-			return '''new ArithmeticPredicateExpr(«leftVisited»,«rightVisited»,ArithmeticOperation.SUM)'''
+			if(java)
+				return '''new ArithmeticPredicateExpr(«leftVisited»,«rightVisited»,ArithmeticOperation.SUM)'''
+			else
+				return '''((«leftVisited»)+(«rightVisited»))'''
 		}
 		else if(expr instanceof Subtraction || expr instanceof SubtractionWithPredicates){
 			if(expr instanceof Subtraction){
-				leftVisited = writeExpr(expr.left) as String
-				rightVisited = writeExpr(expr.right)  as String
+				leftVisited = writeExpr(expr.left,java) as String
+				rightVisited = writeExpr(expr.right,java)  as String
 			}
 			else if(expr instanceof SubtractionWithPredicates){
-				leftVisited = writeExpr(expr.left) as String
-				rightVisited = writeExpr(expr.right)  as String
+				leftVisited = writeExpr(expr.left,java) as String
+				rightVisited = writeExpr(expr.right,java)  as String
 			}
-			return '''new ArithmeticPredicateExpr(«leftVisited»,«rightVisited»,ArithmeticOperation.SUB)'''
+			if(java)
+				return '''new ArithmeticPredicateExpr(«leftVisited»,«rightVisited»,ArithmeticOperation.SUB)'''
+			else
+				return '''((«leftVisited»)-(«rightVisited»))'''	
 		}
 		else if(expr instanceof Multiplication || expr instanceof MultiplicationWithPredicates){
 			if(expr instanceof Multiplication){
-				leftVisited = writeExpr(expr.left) as String
-				rightVisited = writeExpr(expr.right)  as String
+				leftVisited = writeExpr(expr.left,java) as String
+				rightVisited = writeExpr(expr.right,java)  as String
 			}
 			else if(expr instanceof MultiplicationWithPredicates){
-				leftVisited = writeExpr(expr.left) as String
-				rightVisited = writeExpr(expr.right)  as String
+				leftVisited = writeExpr(expr.left,java) as String
+				rightVisited = writeExpr(expr.right,java)  as String
 			}
-			return '''new ArithmeticPredicateExpr(«leftVisited»,«rightVisited»,ArithmeticOperation.MULT)'''
+			if(java)
+				return '''new ArithmeticPredicateExpr(«leftVisited»,«rightVisited»,ArithmeticOperation.MULT)'''
+			else
+				return '''((«leftVisited»)*(«rightVisited»))'''
 		}
 		else if(expr instanceof MinusPrimary || expr instanceof MinusPrimaryWithPredicates){
 			if(expr instanceof MinusPrimary){
-				leftVisited = writeExpr(expr.left) as String
+				leftVisited = writeExpr(expr.left,java) as String
 			}
 			else if(expr instanceof MinusPrimaryWithPredicates){
-				leftVisited = writeExpr(expr.left) as String
+				leftVisited = writeExpr(expr.left,java) as String
 			}
-			return '''new ArithmeticPredicateExpr(new Constant(0),«leftVisited»,ArithmeticOperation.SUB)'''
+			if(java)
+				return '''new ArithmeticPredicateExpr(new Constant(0),«leftVisited»,ArithmeticOperation.SUB)'''
+			else
+				return '''-(«leftVisited»)'''	
 		}
 		else{
 			throw new UnsupportedOperationException("Unsupported expression: " + expr.toString());
@@ -943,7 +1007,7 @@ model.setInitialState(«listOfFeatures(diagram.installedFeatures)», initial);
 			return writeActionIncludingStoreModifierOrFeature(action)
 		}
 		else if(action instanceof AskAction){
-				return '''new AskAction(«visitConstraint(action.question)»)'''
+				return '''new AskAction(«visitConstraint(action.question,true)»)'''
 		}
 		else{
 			throw new UnsupportedOperationException("Unsupported action: " + action);
@@ -1267,7 +1331,7 @@ model.addNormalAction(«action.name»);
 QFLanVariable «variable.name» = model.addVariable("«variable.name»", "«MyParserUtil.visitExpr(variable.value)»");
 '''*/
 '''
-QFLanVariable «variable.name» = model.addVariable("«variable.name»", «writeExpr(variable.value)»);
+QFLanVariable «variable.name» = model.addVariable("«variable.name»", «writeExpr(variable.value,true)»);
 '''
 )
 		}
