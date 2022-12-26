@@ -377,11 +377,13 @@ public class QFlanJavaState extends NewState {
 	@Override
 	public void noMoreStepsNecessary() {
 		super.noMoreStepsNecessary();
-		addSimulationTerminatedToLog();
+		if(!isLastStateAlreadyComputed()) {
+			addSimulationTerminatedToLog();
+		}
 	}
 	private void addSimulationTerminatedToLog() {
 		if(toLog && latestCaptionToValue!=null) {
-			latestCaptionToValue.put("activity", "simulationTerminated");
+			latestCaptionToValue.put("activity", "noMoreStepsNecessary");
 			addRowToLog(latestCaptionToValue);
 			latestCaptionToValue=null;
 		}
@@ -473,17 +475,23 @@ public class QFlanJavaState extends NewState {
 		
 		return caption;
 	}
-	
+
 	@Override
 	public void performOneStepOfSimulation() {
 		//System.out.println("performOneStepOfSimulation");
 		//try {
-			double totalRate = computeAllowedCommittments();
-			//QFlanModel.printTime("\nCompuptation of allowedCommitments",begin,end);
-			if(loadedModel.getNumberOfComputedCommitments()==0){
-				//setLastStateAlreadyComputed(true);
+		double totalRate = computeAllowedCommittments();
+		//QFlanModel.printTime("\nCompuptation of allowedCommitments",begin,end);
+		if(loadedModel.getNumberOfComputedCommitments()==0){
+			addDeadlockLogRow();
+			setLastStateAlreadyComputed(true);
+		}
+		else{
+			if (totalRate == 0) {
+				addDeadlockLogRow();
+				setLastStateAlreadyComputed(true);
 			}
-			else{
+			else {
 				long begin = System.currentTimeMillis();
 				ICommitment comm = chooseCommitment(totalRate);
 				//ICommitment comm = bikesSPLC.getAllowedCommitmentEfficient(sampledNumber);
@@ -492,19 +500,30 @@ public class QFlanJavaState extends NewState {
 				//QFlanModel.printTime("Choice of commitment",begin,end);
 				applyChosenCommitment(comm);
 				//QFlanModel.printTime("Application of commitment",begin,end);
-				
+
 				if(toLog) {
-//					LinkedHashMap<String, String> captionToValue = defaultLogInfo(false);
-//					IAction executed = comm.getAction();
-//					captionToValue.put("activity", cleanAction(executed.getName()));
+					//					LinkedHashMap<String, String> captionToValue = defaultLogInfo(false);
+					//					IAction executed = comm.getAction();
+					//					captionToValue.put("activity", cleanAction(executed.getName()));
 					LinkedHashMap<String, String> captionToValue = computeDataToLog(comm.getAction().getName());
 					addRowToLog(captionToValue);
 				}
 			}
+		}
 		/*} catch (Z3Exception e) {
 			e.printStackTrace();
 			System.exit(-1);
 		}*/
+	}
+	
+	private void addDeadlockLogRow() {
+		if(!isLastStateAlreadyComputed()) {
+			if(toLog) {
+				LinkedHashMap<String, String> captionToValue = defaultLogInfo(false);
+				captionToValue.put("activity", "deadlock");
+				addRowToLog(captionToValue);
+			}
+		}
 	}
 
 	private String cleanAction(String name) {
@@ -552,9 +571,9 @@ public class QFlanJavaState extends NewState {
 		//double totalRate=bikesSPLC.computeAllowedCommitmentsEfficient();
 		long end = System.currentTimeMillis();
 		TOTALCOMPUTATIONCOMMITMENTS+= (end-begin);
-		if(loadedModel.getNumberOfComputedCommitments()==0){
-			setLastStateAlreadyComputed(true);
-		}
+//		if(loadedModel.getNumberOfComputedCommitments()==0){
+//			setLastStateAlreadyComputed(true);
+//		}
 		return totalRate;
 	}
 	
