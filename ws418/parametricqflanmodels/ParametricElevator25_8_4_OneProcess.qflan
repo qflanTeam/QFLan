@@ -1,0 +1,1056 @@
+//Writing one-process-elevator with lastFloor 25, capacity 8, and maxLoad 4 in file ParametricElevator25_8_4_OneProcess.qflan
+begin model ParametricElevator25_8_4_OneProcess
+begin variables
+	// system
+	top = 25			// top floor
+	bottom = 0		// bottom floor
+	parkingFloor = 0 
+	executiveFloor = 25
+	// elevator
+	floor = 0		// current floor
+	door = 0		// door status (open = 1, closed =0)
+	capacity = 8 	// number of persons that can enter the cabin
+	maxLoad = 4		// max persons that should enter the cabin
+	load = 0 		// current load (in number of persons)
+	direction = 0	// +1 is up, -1 is down
+	goal = 0		// floor to be reached
+	// buttons inside the lift (L) and at the floors (F)
+	// 0 means not-pushed, 1 means pushed
+	buttonL0 = 0
+	buttonL1 = 0
+	buttonL2 = 0
+	buttonL3 = 0
+	buttonL4 = 0
+	buttonL5 = 0
+	buttonL6 = 0
+	buttonL7 = 0
+	buttonL8 = 0
+	buttonL9 = 0
+	buttonL10 = 0
+	buttonL11 = 0
+	buttonL12 = 0
+	buttonL13 = 0
+	buttonL14 = 0
+	buttonL15 = 0
+	buttonL16 = 0
+	buttonL17 = 0
+	buttonL18 = 0
+	buttonL19 = 0
+	buttonL20 = 0
+	buttonL21 = 0
+	buttonL22 = 0
+	buttonL23 = 0
+	buttonL24 = 0
+	buttonL25 = 0
+	buttonF0 = 0
+	buttonF1 = 0
+	buttonF2 = 0
+	buttonF3 = 0
+	buttonF4 = 0
+	buttonF5 = 0
+	buttonF6 = 0
+	buttonF7 = 0
+	buttonF8 = 0
+	buttonF9 = 0
+	buttonF10 = 0
+	buttonF11 = 0
+	buttonF12 = 0
+	buttonF13 = 0
+	buttonF14 = 0
+	buttonF15 = 0
+	buttonF16 = 0
+	buttonF17 = 0
+	buttonF18 = 0
+	buttonF19 = 0
+	buttonF20 = 0
+	buttonF21 = 0
+	buttonF22 = 0
+	buttonF23 = 0
+	buttonF24 = 0
+	buttonF25 = 0
+end variables
+
+
+begin abstract features
+ 
+ 	Elevator
+ 
+ end abstract features
+  
+ begin concrete features
+ 
+ 	// Feature model from 
+ 	// Andreas Classen, Maxime Cordy, Patrick Heymans, Axel Legay, 
+ 	// Pierre-Yves Schobbens: Formal semantics, modular specification,
+ 	// and symbolic verification of product-line behaviour. Sci. Comput.
+ 	// Program. 80: 416-439 (2014)
+ 	AntiPrank	// Normally, a lift button will remain pushed until the
+                // corresponding floor is served. With this feature, the
+                // lift buttons have to be held pushed by a person.
+	Empty		// If the lift is empty, then all requests made in the cabin
+                // will be cancelled.
+	Executive	// One floor of the building has priority over the other floors
+                // and will be served first, both for cabin and platform requests.
+	OpenIfIdle 	// When idle, the lift opens its doors.
+	Overload	// The lift will refuse to close its doors when it is overloaded.
+	Parking 	// When idle, the lift returns to the first floor.
+	QuickClose	// The lift door cannot be kept open by holding the platform
+                // button pushed.
+	Shuttle		// The lift will only change direction at the first and last
+                // floor.
+	AlmostFull	// When the lift is two-thirds full, it will serve cabin calls
+                // before platform calls.
+				
+end concrete features
+
+ begin feature diagram
+ 
+  	Elevator -> {?AntiPrank, ?Empty, ?Executive, ?OpenIfIdle,
+  	    		     ?Overload, ?Parking, ?QuickClose, ?Shuttle, ?AlmostFull}
+ 
+ end feature diagram
+ 
+ begin cross-tree constraints
+ end cross-tree constraints
+ 
+ begin feature predicates	
+  	
+ end feature predicates
+ 
+ begin quantitative constraints
+ 
+ 	// Some well-formedness constraints
+   	{ bottom <= top }
+   	{ floor <= top }
+   	{ floor >= bottom }
+   	{ maxLoad < capacity }
+   	{ maxLoad > 0 }
+   	{ load >= 0}
+   	{ load <= capacity }
+   	// One could actually add constraints to specify
+   	// the domain of all variables
+ 
+ end quantitative constraints
+ 
+ begin actions
+ 
+ 	chooseProcess	//one-process: choose which process executes
+ 	changeProcess	//one-process: get back to the decision point
+ 
+ 	up			// move up
+  	down		// move down
+  	startUp     // set direction as up
+  	startDown   // set direction as down
+  	keepDir    	// continue current direction
+  	stop		// stop moving
+  	reverse		// reverse direction
+  	open		// open doors
+  	close		// close doors
+  	pressL		// press lift button
+   	pressF		// press floor button
+  	unpressL	// stop holding the lift button
+   	unpressF	// stop holding the floor button
+  	park		// park the elevator
+  	wakeup		// start moving
+  	clean		// reset buttons
+  	enter		// enter the elevator
+  	leave		// leave the elevator
+  	
+ end actions
+ 
+begin action constraints
+	// 25 is executive
+	// 0 is parking
+	do(open)  -> ({ door == 0 } and (
+		// top & executive
+		(  { floor == executiveFloor }
+		and
+		(
+		(has(Executive) and ({ buttonL25 == 1} or { buttonF25 == 1}))
+		//
+		or
+		(({ buttonL25 == 1} or ({ buttonF25 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		)
+		)
+		
+		// bottom & parking
+		or  (  { floor == parkingFloor }
+		and
+		(
+		(has(Parking)
+		 and { buttonL0 == 0 }
+		 and { buttonF0 == 0 }
+		 and { buttonL1 == 0 }
+		 and { buttonF1 == 0 }
+		 and { buttonL2 == 0 }
+		 and { buttonF2 == 0 }
+		 and { buttonL3 == 0 }
+		 and { buttonF3 == 0 }
+		 and { buttonL4 == 0 }
+		 and { buttonF4 == 0 }
+		 and { buttonL5 == 0 }
+		 and { buttonF5 == 0 }
+		 and { buttonL6 == 0 }
+		 and { buttonF6 == 0 }
+		 and { buttonL7 == 0 }
+		 and { buttonF7 == 0 }
+		 and { buttonL8 == 0 }
+		 and { buttonF8 == 0 }
+		 and { buttonL9 == 0 }
+		 and { buttonF9 == 0 }
+		 and { buttonL10 == 0 }
+		 and { buttonF10 == 0 }
+		 and { buttonL11 == 0 }
+		 and { buttonF11 == 0 }
+		 and { buttonL12 == 0 }
+		 and { buttonF12 == 0 }
+		 and { buttonL13 == 0 }
+		 and { buttonF13 == 0 }
+		 and { buttonL14 == 0 }
+		 and { buttonF14 == 0 }
+		 and { buttonL15 == 0 }
+		 and { buttonF15 == 0 }
+		 and { buttonL16 == 0 }
+		 and { buttonF16 == 0 }
+		 and { buttonL17 == 0 }
+		 and { buttonF17 == 0 }
+		 and { buttonL18 == 0 }
+		 and { buttonF18 == 0 }
+		 and { buttonL19 == 0 }
+		 and { buttonF19 == 0 }
+		 and { buttonL20 == 0 }
+		 and { buttonF20 == 0 }
+		 and { buttonL21 == 0 }
+		 and { buttonF21 == 0 }
+		 and { buttonL22 == 0 }
+		 and { buttonF22 == 0 }
+		 and { buttonL23 == 0 }
+		 and { buttonF23 == 0 }
+		 and { buttonL24 == 0 }
+		 and { buttonF24 == 0 }
+		 and { buttonL25 == 0 }
+		 and { buttonF25 == 0 }
+		)
+		//
+		or
+		(
+		has(Executive) implies ({ buttonF25 == 0} and { buttonL25 == 0})
+		and
+		(({ buttonL0 == 1} or ({ buttonF0 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		)
+		)
+		)
+		// Non-exec/non-park floor
+		or (
+		// Elevator is neither at the exec nor at the park floor
+		{ floor != executiveFloor } and { floor != parkingFloor}
+		// There is no request at the executive floor
+		and (has(Executive) implies ({ buttonF25 == 0} and { buttonL25 == 0}) )
+		// Elevator is at floor i
+		and (
+		( { floor == 1 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL1 == 1} or ({ buttonF1 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 2 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL2 == 1} or ({ buttonF2 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 3 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL3 == 1} or ({ buttonF3 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 4 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL4 == 1} or ({ buttonF4 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 5 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL5 == 1} or ({ buttonF5 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 6 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL6 == 1} or ({ buttonF6 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 7 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL7 == 1} or ({ buttonF7 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 8 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL8 == 1} or ({ buttonF8 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 9 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL9 == 1} or ({ buttonF9 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 10 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL10 == 1} or ({ buttonF10 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 11 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL11 == 1} or ({ buttonF11 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 12 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL12 == 1} or ({ buttonF12 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 13 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL13 == 1} or ({ buttonF13 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 14 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL14 == 1} or ({ buttonF14 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 15 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL15 == 1} or ({ buttonF15 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 16 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL16 == 1} or ({ buttonF16 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 17 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL17 == 1} or ({ buttonF17 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 18 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL18 == 1} or ({ buttonF18 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 19 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL19 == 1} or ({ buttonF19 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 20 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL20 == 1} or ({ buttonF20 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 21 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL21 == 1} or ({ buttonF21 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 22 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL22 == 1} or ({ buttonF22 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 23 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL23 == 1} or ({ buttonF23 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 24 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL24 == 1} or ({ buttonF24 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		)		)		)	)
+	do(stop) -> (! has(Shuttle)
+		and { buttonL0 == 0 }
+		and { buttonF0 == 0 }
+		and { buttonL1 == 0 }
+		and { buttonF1 == 0 }
+		and { buttonL2 == 0 }
+		and { buttonF2 == 0 }
+		and { buttonL3 == 0 }
+		and { buttonF3 == 0 }
+		and { buttonL4 == 0 }
+		and { buttonF4 == 0 }
+		and { buttonL5 == 0 }
+		and { buttonF5 == 0 }
+		and { buttonL6 == 0 }
+		and { buttonF6 == 0 }
+		and { buttonL7 == 0 }
+		and { buttonF7 == 0 }
+		and { buttonL8 == 0 }
+		and { buttonF8 == 0 }
+		and { buttonL9 == 0 }
+		and { buttonF9 == 0 }
+		and { buttonL10 == 0 }
+		and { buttonF10 == 0 }
+		and { buttonL11 == 0 }
+		and { buttonF11 == 0 }
+		and { buttonL12 == 0 }
+		and { buttonF12 == 0 }
+		and { buttonL13 == 0 }
+		and { buttonF13 == 0 }
+		and { buttonL14 == 0 }
+		and { buttonF14 == 0 }
+		and { buttonL15 == 0 }
+		and { buttonF15 == 0 }
+		and { buttonL16 == 0 }
+		and { buttonF16 == 0 }
+		and { buttonL17 == 0 }
+		and { buttonF17 == 0 }
+		and { buttonL18 == 0 }
+		and { buttonF18 == 0 }
+		and { buttonL19 == 0 }
+		and { buttonF19 == 0 }
+		and { buttonL20 == 0 }
+		and { buttonF20 == 0 }
+		and { buttonL21 == 0 }
+		and { buttonF21 == 0 }
+		and { buttonL22 == 0 }
+		and { buttonF22 == 0 }
+		and { buttonL23 == 0 }
+		and { buttonF23 == 0 }
+		and { buttonL24 == 0 }
+		and { buttonF24 == 0 }
+		and { buttonL25 == 0 }
+		and { buttonF25 == 0 }
+	)
+
+	do(wakeup) -> (
+		 { buttonL0 == 1 }
+		or { buttonF0 == 1 }
+		or { buttonL1 == 1 }
+		or { buttonF1 == 1 }
+		or { buttonL2 == 1 }
+		or { buttonF2 == 1 }
+		or { buttonL3 == 1 }
+		or { buttonF3 == 1 }
+		or { buttonL4 == 1 }
+		or { buttonF4 == 1 }
+		or { buttonL5 == 1 }
+		or { buttonF5 == 1 }
+		or { buttonL6 == 1 }
+		or { buttonF6 == 1 }
+		or { buttonL7 == 1 }
+		or { buttonF7 == 1 }
+		or { buttonL8 == 1 }
+		or { buttonF8 == 1 }
+		or { buttonL9 == 1 }
+		or { buttonF9 == 1 }
+		or { buttonL10 == 1 }
+		or { buttonF10 == 1 }
+		or { buttonL11 == 1 }
+		or { buttonF11 == 1 }
+		or { buttonL12 == 1 }
+		or { buttonF12 == 1 }
+		or { buttonL13 == 1 }
+		or { buttonF13 == 1 }
+		or { buttonL14 == 1 }
+		or { buttonF14 == 1 }
+		or { buttonL15 == 1 }
+		or { buttonF15 == 1 }
+		or { buttonL16 == 1 }
+		or { buttonF16 == 1 }
+		or { buttonL17 == 1 }
+		or { buttonF17 == 1 }
+		or { buttonL18 == 1 }
+		or { buttonF18 == 1 }
+		or { buttonL19 == 1 }
+		or { buttonF19 == 1 }
+		or { buttonL20 == 1 }
+		or { buttonF20 == 1 }
+		or { buttonL21 == 1 }
+		or { buttonF21 == 1 }
+		or { buttonL22 == 1 }
+		or { buttonF22 == 1 }
+		or { buttonL23 == 1 }
+		or { buttonF23 == 1 }
+		or { buttonL24 == 1 }
+		or { buttonF24 == 1 }
+		or { buttonL25 == 1 }
+		or { buttonF25 == 1 }
+	)
+
+	do(park) -> (
+		 has(Parking) and { floor == parkingFloor  }
+		and { buttonL0 == 0 }
+		and { buttonF0 == 0 }
+		and { buttonL1 == 0 }
+		and { buttonF1 == 0 }
+		and { buttonL2 == 0 }
+		and { buttonF2 == 0 }
+		and { buttonL3 == 0 }
+		and { buttonF3 == 0 }
+		and { buttonL4 == 0 }
+		and { buttonF4 == 0 }
+		and { buttonL5 == 0 }
+		and { buttonF5 == 0 }
+		and { buttonL6 == 0 }
+		and { buttonF6 == 0 }
+		and { buttonL7 == 0 }
+		and { buttonF7 == 0 }
+		and { buttonL8 == 0 }
+		and { buttonF8 == 0 }
+		and { buttonL9 == 0 }
+		and { buttonF9 == 0 }
+		and { buttonL10 == 0 }
+		and { buttonF10 == 0 }
+		and { buttonL11 == 0 }
+		and { buttonF11 == 0 }
+		and { buttonL12 == 0 }
+		and { buttonF12 == 0 }
+		and { buttonL13 == 0 }
+		and { buttonF13 == 0 }
+		and { buttonL14 == 0 }
+		and { buttonF14 == 0 }
+		and { buttonL15 == 0 }
+		and { buttonF15 == 0 }
+		and { buttonL16 == 0 }
+		and { buttonF16 == 0 }
+		and { buttonL17 == 0 }
+		and { buttonF17 == 0 }
+		and { buttonL18 == 0 }
+		and { buttonF18 == 0 }
+		and { buttonL19 == 0 }
+		and { buttonF19 == 0 }
+		and { buttonL20 == 0 }
+		and { buttonF20 == 0 }
+		and { buttonL21 == 0 }
+		and { buttonF21 == 0 }
+		and { buttonL22 == 0 }
+		and { buttonF22 == 0 }
+		and { buttonL23 == 0 }
+		and { buttonF23 == 0 }
+		and { buttonL24 == 0 }
+		and { buttonF24 == 0 }
+		and { buttonL25 == 0 }
+		and { buttonF25 == 0 }
+	)
+	do(close) -> ({ door == 1 }
+   				//and (has(Parking) implies ! { direction == 0 } )
+   				and ((has(Parking) and {floor==0}) implies ! { direction == 0 } )
+   				and (has(Overload) implies { load <= maxLoad } )
+   	)
+
+   	do(up)    -> ({ direction == 1 } and { floor < top } and { door == 0 })
+
+   	do(down)  -> ({ direction == -1} and { floor > bottom } and { door == 0 })
+
+   	do(startUp) -> { floor < goal }
+
+   	do(startDown) -> {floor > goal }
+
+   	do(keepDir) -> (
+   		has(Shuttle)
+   	    or  ({ floor < goal } and { direction == 1})
+   	    or  ({ floor > goal } and { direction == -1})
+   	    )
+
+   	do(reverse) -> (
+   				has(Shuttle) and
+   			   ({ floor == top} or { floor == bottom }) 
+                )
+
+ 	do(clean) -> ( has(Empty) and { load==0 } )
+
+    do(pressL) -> { load > 0 }
+
+    do(pressF) -> true
+
+ 	do(unpressL) -> has(AntiPrank)
+
+  	do(unpressF) -> has(AntiPrank)
+
+    do(enter) -> ({ door == 1 } and { load < capacity })
+
+    //do(leave) -> ({ door == 1 } and { capacity > 0})
+    do(leave) -> ({ door == 1 } and { load > 0})
+end action constraints
+
+begin processes diagram
+	begin process RootProcess
+	states = Root,
+				//LiftProc
+				Lift,LiftTurnButtonDown,
+				//ControllerProc
+				Controller, ChooseGoal, ChooseGoalExec, ChooseDirection, ChooseGoalNonExec, ChooseGoalInside, ChooseGoalInAndOut,
+				//ButtonsProc
+				Buttons,
+				//PeopleProc
+				People
+	transitions=
+	////////
+	//ROOT//
+	////////
+	//Choose who executes
+	Root -(chooseProcess,1)-> Lift,
+	Root -(chooseProcess,1)-> Controller,
+	Root -(chooseProcess,1)-> Buttons,
+	Root -(chooseProcess,1)-> People,
+	//Go back to rootChoose who executes
+	Lift -(changeProcess,5)-> Root,
+	Controller -(changeProcess,1)-> Root,
+	Buttons -(changeProcess,104)-> Root,
+	People -(changeProcess,2)-> Root,
+
+
+	////////////
+	//LiftProc//
+	////////////
+	Lift -(open    , 1 , {door  = 1 } )-> LiftTurnButtonDown,
+	Lift -(close   , 1 , {door  = 0 } )-> Lift,
+	Lift -(up      , 1 , {floor = floor + 1} )-> Lift,
+	Lift -(down    , 1 , {floor = floor - 1} )-> Lift,
+	Lift -(clean	   , 1/*00*/ , { 
+		buttonL0 = 0 ,
+		buttonL1 = 0 ,
+		buttonL2 = 0 ,
+		buttonL3 = 0 ,
+		buttonL4 = 0 ,
+		buttonL5 = 0 ,
+		buttonL6 = 0 ,
+		buttonL7 = 0 ,
+		buttonL8 = 0 ,
+		buttonL9 = 0 ,
+		buttonL10 = 0 ,
+		buttonL11 = 0 ,
+		buttonL12 = 0 ,
+		buttonL13 = 0 ,
+		buttonL14 = 0 ,
+		buttonL15 = 0 ,
+		buttonL16 = 0 ,
+		buttonL17 = 0 ,
+		buttonL18 = 0 ,
+		buttonL19 = 0 ,
+		buttonL20 = 0 ,
+		buttonL21 = 0 ,
+		buttonL22 = 0 ,
+		buttonL23 = 0 ,
+		buttonL24 = 0 ,
+		buttonL25 = 0 })-> Lift,
+
+	LiftTurnButtonDown -(ask({floor==0}) , 100 , { buttonL0 = 0 , buttonF0 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==1}) , 100 , { buttonL1 = 0 , buttonF1 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==2}) , 100 , { buttonL2 = 0 , buttonF2 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==3}) , 100 , { buttonL3 = 0 , buttonF3 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==4}) , 100 , { buttonL4 = 0 , buttonF4 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==5}) , 100 , { buttonL5 = 0 , buttonF5 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==6}) , 100 , { buttonL6 = 0 , buttonF6 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==7}) , 100 , { buttonL7 = 0 , buttonF7 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==8}) , 100 , { buttonL8 = 0 , buttonF8 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==9}) , 100 , { buttonL9 = 0 , buttonF9 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==10}) , 100 , { buttonL10 = 0 , buttonF10 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==11}) , 100 , { buttonL11 = 0 , buttonF11 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==12}) , 100 , { buttonL12 = 0 , buttonF12 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==13}) , 100 , { buttonL13 = 0 , buttonF13 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==14}) , 100 , { buttonL14 = 0 , buttonF14 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==15}) , 100 , { buttonL15 = 0 , buttonF15 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==16}) , 100 , { buttonL16 = 0 , buttonF16 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==17}) , 100 , { buttonL17 = 0 , buttonF17 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==18}) , 100 , { buttonL18 = 0 , buttonF18 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==19}) , 100 , { buttonL19 = 0 , buttonF19 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==20}) , 100 , { buttonL20 = 0 , buttonF20 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==21}) , 100 , { buttonL21 = 0 , buttonF21 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==22}) , 100 , { buttonL22 = 0 , buttonF22 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==23}) , 100 , { buttonL23 = 0 , buttonF23 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==24}) , 100 , { buttonL24 = 0 , buttonF24 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==25}) , 100 , { buttonL25 = 0 , buttonF25 = 0 })-> Lift,
+
+
+	//////////////////
+	//ControllerProc//
+	//////////////////
+	Controller -(ask(true)    , 1 )-> ChooseGoal,
+
+	ChooseGoal -(ask(has(Parking) and 
+		       {buttonL0==0} and {buttonF0==0} and
+		       {buttonL1==0} and {buttonF1==0} and
+		       {buttonL2==0} and {buttonF2==0} and
+		       {buttonL3==0} and {buttonF3==0} and
+		       {buttonL4==0} and {buttonF4==0} and
+		       {buttonL5==0} and {buttonF5==0} and
+		       {buttonL6==0} and {buttonF6==0} and
+		       {buttonL7==0} and {buttonF7==0} and
+		       {buttonL8==0} and {buttonF8==0} and
+		       {buttonL9==0} and {buttonF9==0} and
+		       {buttonL10==0} and {buttonF10==0} and
+		       {buttonL11==0} and {buttonF11==0} and
+		       {buttonL12==0} and {buttonF12==0} and
+		       {buttonL13==0} and {buttonF13==0} and
+		       {buttonL14==0} and {buttonF14==0} and
+		       {buttonL15==0} and {buttonF15==0} and
+		       {buttonL16==0} and {buttonF16==0} and
+		       {buttonL17==0} and {buttonF17==0} and
+		       {buttonL18==0} and {buttonF18==0} and
+		       {buttonL19==0} and {buttonF19==0} and
+		       {buttonL20==0} and {buttonF20==0} and
+		       {buttonL21==0} and {buttonF21==0} and
+		       {buttonL22==0} and {buttonF22==0} and
+		       {buttonL23==0} and {buttonF23==0} and
+		       {buttonL24==0} and {buttonF24==0} and
+		       {buttonL25==0} and {buttonF25==0}
+		       ) , 100 , {goal = 0} )->ChooseDirection,
+	ChooseGoal -(ask(!(has(Parking) and 
+		       {buttonL0==0} and {buttonF0==0} and
+		       {buttonL1==0} and {buttonF1==0} and
+		       {buttonL2==0} and {buttonF2==0} and
+		       {buttonL3==0} and {buttonF3==0} and
+		       {buttonL4==0} and {buttonF4==0} and
+		       {buttonL5==0} and {buttonF5==0} and
+		       {buttonL6==0} and {buttonF6==0} and
+		       {buttonL7==0} and {buttonF7==0} and
+		       {buttonL8==0} and {buttonF8==0} and
+		       {buttonL9==0} and {buttonF9==0} and
+		       {buttonL10==0} and {buttonF10==0} and
+		       {buttonL11==0} and {buttonF11==0} and
+		       {buttonL12==0} and {buttonF12==0} and
+		       {buttonL13==0} and {buttonF13==0} and
+		       {buttonL14==0} and {buttonF14==0} and
+		       {buttonL15==0} and {buttonF15==0} and
+		       {buttonL16==0} and {buttonF16==0} and
+		       {buttonL17==0} and {buttonF17==0} and
+		       {buttonL18==0} and {buttonF18==0} and
+		       {buttonL19==0} and {buttonF19==0} and
+		       {buttonL20==0} and {buttonF20==0} and
+		       {buttonL21==0} and {buttonF21==0} and
+		       {buttonL22==0} and {buttonF22==0} and
+		       {buttonL23==0} and {buttonF23==0} and
+		       {buttonL24==0} and {buttonF24==0} and
+		       {buttonL25==0} and {buttonF25==0}
+		       )) , 100 )->ChooseGoalExec,
+
+	ChooseGoalExec -(ask(has(Executive) and
+	      	  ({buttonL25==1} or {buttonF25==1})) , 100 , {goal = 25})-> ChooseDirection,
+	ChooseGoalExec -(ask( ! (has(Executive) and
+	      	  ({buttonL25==1} or {buttonF25==1}))) , 100)-> ChooseGoalNonExec,
+
+	ChooseGoalNonExec-(ask(has(AlmostFull) and
+	      	(   { buttonL0 == 1 } 
+	      	 or { buttonL1 == 1 }
+	      	 or { buttonL2 == 1 }
+	      	 or { buttonL3 == 1 }
+	      	 or { buttonL4 == 1 }
+	      	 or { buttonL5 == 1 }
+	      	 or { buttonL6 == 1 }
+	      	 or { buttonL7 == 1 }
+	      	 or { buttonL8 == 1 }
+	      	 or { buttonL9 == 1 }
+	      	 or { buttonL10 == 1 }
+	      	 or { buttonL11 == 1 }
+	      	 or { buttonL12 == 1 }
+	      	 or { buttonL13 == 1 }
+	      	 or { buttonL14 == 1 }
+	      	 or { buttonL15 == 1 }
+	      	 or { buttonL16 == 1 }
+	      	 or { buttonL17 == 1 }
+	      	 or { buttonL18 == 1 }
+	      	 or { buttonL19 == 1 }
+	      	 or { buttonL20 == 1 }
+	      	 or { buttonL21 == 1 }
+	      	 or { buttonL22 == 1 }
+	      	 or { buttonL23 == 1 }
+	      	 or { buttonL24 == 1 }
+	      	 or { buttonL25 == 1 }
+	      	 ))
+	      	 , 100
+	      )-> ChooseGoalInside,
+	ChooseGoalNonExec-(ask(!(has(AlmostFull) and
+	      	(   { buttonL0 == 1 } 
+	      	 or { buttonL1 == 1 }
+	      	 or { buttonL2 == 1 }
+	      	 or { buttonL3 == 1 }
+	      	 or { buttonL4 == 1 }
+	      	 or { buttonL5 == 1 }
+	      	 or { buttonL6 == 1 }
+	      	 or { buttonL7 == 1 }
+	      	 or { buttonL8 == 1 }
+	      	 or { buttonL9 == 1 }
+	      	 or { buttonL10 == 1 }
+	      	 or { buttonL11 == 1 }
+	      	 or { buttonL12 == 1 }
+	      	 or { buttonL13 == 1 }
+	      	 or { buttonL14 == 1 }
+	      	 or { buttonL15 == 1 }
+	      	 or { buttonL16 == 1 }
+	      	 or { buttonL17 == 1 }
+	      	 or { buttonL18 == 1 }
+	      	 or { buttonL19 == 1 }
+	      	 or { buttonL20 == 1 }
+	      	 or { buttonL21 == 1 }
+	      	 or { buttonL22 == 1 }
+	      	 or { buttonL23 == 1 }
+	      	 or { buttonL24 == 1 }
+	      	 or { buttonL25 == 1 }
+	      	 )))
+	      	 , 100
+	      )-> ChooseGoalInAndOut,
+
+	ChooseGoalInside -(ask({floor<25} and {direction>=0} and ({buttonL25==1})) , 100 , {goal = 25})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<24} and {direction>=0} and ({buttonL24==1})) , 100 , {goal = 24})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<23} and {direction>=0} and ({buttonL23==1})) , 100 , {goal = 23})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<22} and {direction>=0} and ({buttonL22==1})) , 100 , {goal = 22})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<21} and {direction>=0} and ({buttonL21==1})) , 100 , {goal = 21})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<20} and {direction>=0} and ({buttonL20==1})) , 100 , {goal = 20})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<19} and {direction>=0} and ({buttonL19==1})) , 100 , {goal = 19})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<18} and {direction>=0} and ({buttonL18==1})) , 100 , {goal = 18})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<17} and {direction>=0} and ({buttonL17==1})) , 100 , {goal = 17})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<16} and {direction>=0} and ({buttonL16==1})) , 100 , {goal = 16})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<15} and {direction>=0} and ({buttonL15==1})) , 100 , {goal = 15})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<14} and {direction>=0} and ({buttonL14==1})) , 100 , {goal = 14})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<13} and {direction>=0} and ({buttonL13==1})) , 100 , {goal = 13})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<12} and {direction>=0} and ({buttonL12==1})) , 100 , {goal = 12})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<11} and {direction>=0} and ({buttonL11==1})) , 100 , {goal = 11})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<10} and {direction>=0} and ({buttonL10==1})) , 100 , {goal = 10})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<9} and {direction>=0} and ({buttonL9==1})) , 100 , {goal = 9})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<8} and {direction>=0} and ({buttonL8==1})) , 100 , {goal = 8})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<7} and {direction>=0} and ({buttonL7==1})) , 100 , {goal = 7})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<6} and {direction>=0} and ({buttonL6==1})) , 100 , {goal = 6})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<5} and {direction>=0} and ({buttonL5==1})) , 100 , {goal = 5})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<4} and {direction>=0} and ({buttonL4==1})) , 100 , {goal = 4})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<3} and {direction>=0} and ({buttonL3==1})) , 100 , {goal = 3})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<2} and {direction>=0} and ({buttonL2==1})) , 100 , {goal = 2})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<1} and {direction>=0} and ({buttonL1==1})) , 100 , {goal = 1})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>24} and {direction<=0} and ({buttonL24==1})) , 100 , {goal = 24})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>23} and {direction<=0} and ({buttonL23==1})) , 100 , {goal = 23})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>22} and {direction<=0} and ({buttonL22==1})) , 100 , {goal = 22})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>21} and {direction<=0} and ({buttonL21==1})) , 100 , {goal = 21})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>20} and {direction<=0} and ({buttonL20==1})) , 100 , {goal = 20})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>19} and {direction<=0} and ({buttonL19==1})) , 100 , {goal = 19})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>18} and {direction<=0} and ({buttonL18==1})) , 100 , {goal = 18})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>17} and {direction<=0} and ({buttonL17==1})) , 100 , {goal = 17})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>16} and {direction<=0} and ({buttonL16==1})) , 100 , {goal = 16})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>15} and {direction<=0} and ({buttonL15==1})) , 100 , {goal = 15})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>14} and {direction<=0} and ({buttonL14==1})) , 100 , {goal = 14})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>13} and {direction<=0} and ({buttonL13==1})) , 100 , {goal = 13})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>12} and {direction<=0} and ({buttonL12==1})) , 100 , {goal = 12})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>11} and {direction<=0} and ({buttonL11==1})) , 100 , {goal = 11})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>10} and {direction<=0} and ({buttonL10==1})) , 100 , {goal = 10})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>9} and {direction<=0} and ({buttonL9==1})) , 100 , {goal = 9})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>8} and {direction<=0} and ({buttonL8==1})) , 100 , {goal = 8})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>7} and {direction<=0} and ({buttonL7==1})) , 100 , {goal = 7})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>6} and {direction<=0} and ({buttonL6==1})) , 100 , {goal = 6})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>5} and {direction<=0} and ({buttonL5==1})) , 100 , {goal = 5})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>4} and {direction<=0} and ({buttonL4==1})) , 100 , {goal = 4})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>3} and {direction<=0} and ({buttonL3==1})) , 100 , {goal = 3})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>2} and {direction<=0} and ({buttonL2==1})) , 100 , {goal = 2})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>1} and {direction<=0} and ({buttonL1==1})) , 100 , {goal = 1})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>0} and {direction<=0} and ({buttonL0==1})) , 100 , {goal = 0})-> ChooseDirection,
+
+	ChooseGoalInAndOut -(ask({floor<25} and {direction>=0} and ({buttonL25==1} or {buttonF25==1})) , 100 , {goal = 25})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<24} and {direction>=0} and ({buttonL24==1} or {buttonF24==1})) , 100 , {goal = 24})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<23} and {direction>=0} and ({buttonL23==1} or {buttonF23==1})) , 100 , {goal = 23})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<22} and {direction>=0} and ({buttonL22==1} or {buttonF22==1})) , 100 , {goal = 22})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<21} and {direction>=0} and ({buttonL21==1} or {buttonF21==1})) , 100 , {goal = 21})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<20} and {direction>=0} and ({buttonL20==1} or {buttonF20==1})) , 100 , {goal = 20})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<19} and {direction>=0} and ({buttonL19==1} or {buttonF19==1})) , 100 , {goal = 19})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<18} and {direction>=0} and ({buttonL18==1} or {buttonF18==1})) , 100 , {goal = 18})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<17} and {direction>=0} and ({buttonL17==1} or {buttonF17==1})) , 100 , {goal = 17})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<16} and {direction>=0} and ({buttonL16==1} or {buttonF16==1})) , 100 , {goal = 16})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<15} and {direction>=0} and ({buttonL15==1} or {buttonF15==1})) , 100 , {goal = 15})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<14} and {direction>=0} and ({buttonL14==1} or {buttonF14==1})) , 100 , {goal = 14})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<13} and {direction>=0} and ({buttonL13==1} or {buttonF13==1})) , 100 , {goal = 13})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<12} and {direction>=0} and ({buttonL12==1} or {buttonF12==1})) , 100 , {goal = 12})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<11} and {direction>=0} and ({buttonL11==1} or {buttonF11==1})) , 100 , {goal = 11})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<10} and {direction>=0} and ({buttonL10==1} or {buttonF10==1})) , 100 , {goal = 10})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<9} and {direction>=0} and ({buttonL9==1} or {buttonF9==1})) , 100 , {goal = 9})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<8} and {direction>=0} and ({buttonL8==1} or {buttonF8==1})) , 100 , {goal = 8})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<7} and {direction>=0} and ({buttonL7==1} or {buttonF7==1})) , 100 , {goal = 7})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<6} and {direction>=0} and ({buttonL6==1} or {buttonF6==1})) , 100 , {goal = 6})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<5} and {direction>=0} and ({buttonL5==1} or {buttonF5==1})) , 100 , {goal = 5})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<4} and {direction>=0} and ({buttonL4==1} or {buttonF4==1})) , 100 , {goal = 4})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<3} and {direction>=0} and ({buttonL3==1} or {buttonF3==1})) , 100 , {goal = 3})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<2} and {direction>=0} and ({buttonL2==1} or {buttonF2==1})) , 100 , {goal = 2})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<1} and {direction>=0} and ({buttonL1==1} or {buttonF1==1})) , 100 , {goal = 1})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>24} and {direction<=0} and ({buttonL24==1} or {buttonF24==1})) , 100 , {goal = 24})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>23} and {direction<=0} and ({buttonL23==1} or {buttonF23==1})) , 100 , {goal = 23})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>22} and {direction<=0} and ({buttonL22==1} or {buttonF22==1})) , 100 , {goal = 22})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>21} and {direction<=0} and ({buttonL21==1} or {buttonF21==1})) , 100 , {goal = 21})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>20} and {direction<=0} and ({buttonL20==1} or {buttonF20==1})) , 100 , {goal = 20})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>19} and {direction<=0} and ({buttonL19==1} or {buttonF19==1})) , 100 , {goal = 19})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>18} and {direction<=0} and ({buttonL18==1} or {buttonF18==1})) , 100 , {goal = 18})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>17} and {direction<=0} and ({buttonL17==1} or {buttonF17==1})) , 100 , {goal = 17})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>16} and {direction<=0} and ({buttonL16==1} or {buttonF16==1})) , 100 , {goal = 16})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>15} and {direction<=0} and ({buttonL15==1} or {buttonF15==1})) , 100 , {goal = 15})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>14} and {direction<=0} and ({buttonL14==1} or {buttonF14==1})) , 100 , {goal = 14})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>13} and {direction<=0} and ({buttonL13==1} or {buttonF13==1})) , 100 , {goal = 13})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>12} and {direction<=0} and ({buttonL12==1} or {buttonF12==1})) , 100 , {goal = 12})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>11} and {direction<=0} and ({buttonL11==1} or {buttonF11==1})) , 100 , {goal = 11})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>10} and {direction<=0} and ({buttonL10==1} or {buttonF10==1})) , 100 , {goal = 10})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>9} and {direction<=0} and ({buttonL9==1} or {buttonF9==1})) , 100 , {goal = 9})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>8} and {direction<=0} and ({buttonL8==1} or {buttonF8==1})) , 100 , {goal = 8})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>7} and {direction<=0} and ({buttonL7==1} or {buttonF7==1})) , 100 , {goal = 7})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>6} and {direction<=0} and ({buttonL6==1} or {buttonF6==1})) , 100 , {goal = 6})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>5} and {direction<=0} and ({buttonL5==1} or {buttonF5==1})) , 100 , {goal = 5})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>4} and {direction<=0} and ({buttonL4==1} or {buttonF4==1})) , 100 , {goal = 4})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>3} and {direction<=0} and ({buttonL3==1} or {buttonF3==1})) , 100 , {goal = 3})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>2} and {direction<=0} and ({buttonL2==1} or {buttonF2==1})) , 100 , {goal = 2})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>1} and {direction<=0} and ({buttonL1==1} or {buttonF1==1})) , 100 , {goal = 1})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>0} and {direction<=0} and ({buttonL0==1} or {buttonF0==1})) , 100 , {goal = 0})-> ChooseDirection,
+
+	ChooseDirection -(stop      , 100 , {direction = 0 } )             -> Controller,
+	ChooseDirection -(park      , 100 , {direction = 0 , door = 1} )   -> Controller,
+	ChooseDirection -(startUp   , 100 , {direction =  1})              -> Controller,
+	ChooseDirection -(startDown , 100 , {direction = -1})              -> Controller,
+	ChooseDirection -(keepDir   , 100 )                                -> Controller,
+	ChooseDirection -(reverse   , 100 , {direction = -direction})      -> Controller,
+
+
+	///////////////
+	//ButtonsProc//12
+	///////////////
+	Buttons -(pressL , 1 , { buttonL0 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF0 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL1 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF1 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL2 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF2 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL3 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF3 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL4 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF4 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL5 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF5 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL6 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF6 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL7 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF7 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL8 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF8 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL9 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF9 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL10 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF10 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL11 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF11 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL12 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF12 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL13 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF13 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL14 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF14 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL15 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF15 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL16 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF16 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL17 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF17 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL18 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF18 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL19 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF19 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL20 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF20 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL21 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF21 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL22 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF22 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL23 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF23 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL24 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF24 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL25 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF25 = 1 })-> Buttons,
+	// Unpressing (AntiPrank feature
+	Buttons -(unpressL , 1 , { buttonL0 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF0 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL1 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF1 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL2 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF2 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL3 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF3 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL4 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF4 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL5 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF5 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL6 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF6 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL7 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF7 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL8 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF8 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL9 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF9 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL10 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF10 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL11 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF11 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL12 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF12 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL13 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF13 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL14 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF14 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL15 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF15 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL16 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF16 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL17 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF17 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL18 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF18 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL19 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF19 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL20 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF20 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL21 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF21 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL22 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF22 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL23 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF23 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL24 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF24 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL25 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF25 = 0 })-> Buttons,
+
+
+	//////////////
+	//PeopleProc//2
+	//////////////
+	People-(enter , 1/*0*/ , { load = load + 1 }) -> People,
+	People-(leave , 1/*0*/ , { load = load - 1 }) -> People
+	end process
+
+end processes diagram
+
+
+begin init
+  	installedFeatures = {
+  		Parking ,
+ 		AntiPrank ,
+  		Empty ,
+  		Executive ,
+  		OpenIfIdle ,
+  	    Overload ,
+  	    //Parking ,
+  	    QuickClose ,
+  	    Shuttle, 
+  	    AlmostFull
+  	}
+  	//initialProcess = Start
+  	//initialProcesses = LiftProc | ControllerProc | ButtonsProc | PeopleProc
+  	initialProcesses = RootProcess 
+end init
+ 
+/* 
+begin simulate
+	seed = 1 
+	steps = 10
+	file = "./simulation.txt"
+end simulate
+*/
+
+/*
+begin analysis
+  	query = eval from 1 to 500 by 1 : {floor}
+  	default delta =0.1
+  	alpha = 0.1
+  	parallelism = 1
+  	simulations block = 25
+  	intermediate results = 10
+end analysis
+*/
+
+begin analysis
+	queryFile ="./MultiQuaTEx/untilElevator5000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator10000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator15000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator20000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator25000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator30000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator35000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator40000.multiquatex"
+	delta = "0.01"
+	alpha = 0.1
+	parallelism= 1
+	simulations block = 60
+	intermediate results = 50
+	
+	logs = "logsElevator25_8_4_OneProcess.csv"
+
+end analysis
+end model

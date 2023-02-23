@@ -1,0 +1,125 @@
+   	process Start = Lift 
+                  | Controller
+                  | Buttons
+                  | People
+  
+  	process Lift =  
+      (open    , 1 , {door  = 1 } )         . LiftTurnButtonDown
+    + (close   , 1 , {door  = 0 } )         . Lift
+    + (up      , 1 , {floor = floor + 1} )  . Lift
+    + (down    , 1 , {floor = floor - 1} )  . Lift
+    + (clean	   , 100 , { 
+   	           buttonL0 = 0 , 
+   	           buttonL1 = 0 ,
+   	           buttonL2 = 0 ,
+               buttonL3 = 0 ,
+               buttonL4 = 0 }) . Lift
+    
+  	process LiftTurnButtonDown =
+      (ask({floor==0}) , 100 , { buttonL0 = 0 , buttonF0 = 0 }) . Lift
+    + (ask({floor==1}) , 100 , { buttonL1 = 0 , buttonF1 = 0 }) . Lift
+    + (ask({floor==2}) , 100 , { buttonL2 = 0 , buttonF2 = 0 }) . Lift 
+    + (ask({floor==3}) , 100 , { buttonL3 = 0 , buttonF3 = 0 }) . Lift
+    + (ask({floor==4}) , 100 , { buttonL4 = 0 , buttonF4 = 0 }) . Lift    
+    
+  	process Controller = 
+      (ask(true)    , 1 ) . ChooseGoal
+    
+    process ChooseGoal =   
+       (ask(has(Parking) and 
+    	       {buttonL0==0} and {buttonF0==0} and
+    	       {buttonL1==0} and {buttonF1==0} and 
+    	       {buttonL2==0} and {buttonF2==0} and
+    	       {buttonL3==0} and {buttonF3==0} and
+    	       {buttonL4==0} and {buttonF4==0}
+    	       ) , 100 , {goal = 0} ) 
+    	        . ChooseDirection
+    +  (ask(!(has(Parking) and 
+    	       {buttonL0==0} and {buttonF0==0} and
+    	       {buttonL1==0} and {buttonF1==0} and 
+    	       {buttonL2==0} and {buttonF2==0} and
+    	       {buttonL3==0} and {buttonF3==0} and
+    	       {buttonL4==0} and {buttonF4==0}
+    	       )) , 100 ) 
+    	        . ChooseGoalExec
+    	        
+    process ChooseGoalExec =
+      (ask(has(Executive) and
+      	  ({buttonL4==1} or {buttonF4==1})) , 100 , {goal = 4}) . ChooseDirection
+    + (ask( ! (has(Executive) and
+      	  ({buttonL4==1} or {buttonF4==1}))) , 100) . ChooseGoalNonExec
+    
+    process ChooseGoalNonExec =
+      (ask(has(AlmostFull) and
+      	(    { buttonL0 == 1 } 
+          or { buttonL1 == 1 }
+          or { buttonL2 == 1 }
+          or { buttonL3 == 1 }
+          or { buttonL4 == 1 }))
+      	, 100
+      ) . ChooseGoalInside 
+    + (ask( !(has(AlmostFull) and
+      	(    { buttonL0 == 1 } 
+          or { buttonL1 == 1 }
+          or { buttonL2 == 1 }
+          or { buttonL3 == 1 }
+          or { buttonL4 == 1 })))
+      	, 100
+      ) . ChooseGoalInAndOut 
+    
+    	process ChooseGoalInside =  
+      (ask({floor<4} and {direction>=0} and ({buttonL4==1})) , 100 , {goal = 4}) . ChooseDirection
+    + (ask({floor<3} and {direction>=0} and ({buttonL3==1})) , 100 , {goal = 3}) . ChooseDirection
+    + (ask({floor<2} and {direction>=0} and ({buttonL2==1})) , 100 , {goal = 2}) . ChooseDirection
+    + (ask({floor<1} and {direction>=0} and ({buttonL1==1})) , 100 , {goal = 1}) . ChooseDirection
+    + (ask({floor>3} and {direction<=0} and ({buttonL3==1})) , 100 , {goal = 3}) . ChooseDirection
+    + (ask({floor>2} and {direction<=0} and ({buttonL2==1})) , 100 , {goal = 2}) . ChooseDirection
+    + (ask({floor>1} and {direction<=0} and ({buttonL1==1})) , 100 , {goal = 1}) . ChooseDirection
+    + (ask({floor>0} and {direction<=0} and ({buttonL0==1})) , 100 , {goal = 0}) . ChooseDirection
+ 
+	process ChooseGoalInAndOut =    
+      (ask({floor<4} and {direction>=0} and ({buttonL4==1} or {buttonF4==1})) , 100 , {goal = 4}) . ChooseDirection
+    + (ask({floor<3} and {direction>=0} and ({buttonL3==1} or {buttonF3==1})) , 100 , {goal = 3}) . ChooseDirection
+    + (ask({floor<2} and {direction>=0} and ({buttonL2==1} or {buttonF2==1})) , 100 , {goal = 2}) . ChooseDirection
+    + (ask({floor<1} and {direction>=0} and ({buttonL1==1} or {buttonF1==1})) , 100 , {goal = 1}) . ChooseDirection
+    + (ask({floor>3} and {direction<=0} and ({buttonL3==1} or {buttonF3==1})) , 100 , {goal = 3}) . ChooseDirection
+    + (ask({floor>2} and {direction<=0} and ({buttonL2==1} or {buttonF3==1})) , 100 , {goal = 2}) . ChooseDirection
+    + (ask({floor>1} and {direction<=0} and ({buttonL1==1} or {buttonF3==1})) , 100 , {goal = 1}) . ChooseDirection
+    + (ask({floor>0} and {direction<=0} and ({buttonL0==1} or {buttonF3==1})) , 100 , {goal = 0}) . ChooseDirection
+
+    process ChooseDirection =
+      (stop      , 100 , {direction = 0 } )             . Controller
+    + (park      , 100 , {direction = 0 , door = 1} )   . Controller
+ 	+ (startUp   , 100 , {direction =  1})              . Controller
+	+ (startDown , 100 , {direction = -1})              . Controller
+	+ (keepDir   , 100 )                                . Controller
+	+ (reverse   , 100 , {direction = -direction})      . Controller
+          
+  	process Buttons =
+  	// Pressing the buttons
+      (pressL , 1 , { buttonL0 = 1 }) . Buttons
+    + (pressL , 1 , { buttonL1 = 1 }) . Buttons
+    + (pressL , 1 , { buttonL2 = 1 }) . Buttons
+    + (pressL , 1 , { buttonL3 = 1 }) . Buttons
+    + (pressL , 1 , { buttonL4 = 1 }) . Buttons
+    + (pressF , 1 , { buttonF0 = 1 }) . Buttons
+    + (pressF , 1 , { buttonF1 = 1 }) . Buttons
+    + (pressF , 1 , { buttonF2 = 1 }) . Buttons
+    + (pressF , 1 , { buttonF3 = 1 }) . Buttons
+    + (pressF , 1 , { buttonF4 = 1 }) . Buttons
+    // Unpressing (AntiPrank feature
+    + (unpressL , 1 , { buttonL0 = 0 }) . Buttons
+    + (unpressL , 1 , { buttonL1 = 0 }) . Buttons
+    + (unpressL , 1 , { buttonL2 = 0 }) . Buttons
+    + (unpressL , 1 , { buttonL3 = 0 }) . Buttons
+    + (unpressL , 1 , { buttonL4 = 0 }) . Buttons
+    + (unpressF , 1 , { buttonF0 = 0 }) . Buttons
+    + (unpressF , 1 , { buttonF1 = 0 }) . Buttons
+    + (unpressF , 1 , { buttonF2 = 0 }) . Buttons
+    + (unpressF , 1 , { buttonF3 = 0 }) . Buttons
+    + (unpressF , 1 , { buttonF4 = 0 }) . Buttons
+    
+  	process People =
+      (enter , 10 , { load = load + 1 }) . People
+    + (leave , 10 , { load = load - 1 }) . People 
+ 

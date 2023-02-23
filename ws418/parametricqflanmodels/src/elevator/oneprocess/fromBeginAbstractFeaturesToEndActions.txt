@@ -1,0 +1,88 @@
+
+begin abstract features
+ 
+ 	Elevator
+ 
+ end abstract features
+  
+ begin concrete features
+ 
+ 	// Feature model from 
+ 	// Andreas Classen, Maxime Cordy, Patrick Heymans, Axel Legay, 
+ 	// Pierre-Yves Schobbens: Formal semantics, modular specification,
+ 	// and symbolic verification of product-line behaviour. Sci. Comput.
+ 	// Program. 80: 416-439 (2014)
+ 	AntiPrank	// Normally, a lift button will remain pushed until the
+                // corresponding floor is served. With this feature, the
+                // lift buttons have to be held pushed by a person.
+	Empty		// If the lift is empty, then all requests made in the cabin
+                // will be cancelled.
+	Executive	// One floor of the building has priority over the other floors
+                // and will be served first, both for cabin and platform requests.
+	OpenIfIdle 	// When idle, the lift opens its doors.
+	Overload	// The lift will refuse to close its doors when it is overloaded.
+	Parking 	// When idle, the lift returns to the first floor.
+	QuickClose	// The lift door cannot be kept open by holding the platform
+                // button pushed.
+	Shuttle		// The lift will only change direction at the first and last
+                // floor.
+	AlmostFull	// When the lift is two-thirds full, it will serve cabin calls
+                // before platform calls.
+				
+end concrete features
+
+ begin feature diagram
+ 
+  	Elevator -> {?AntiPrank, ?Empty, ?Executive, ?OpenIfIdle,
+  	    		     ?Overload, ?Parking, ?QuickClose, ?Shuttle, ?AlmostFull}
+ 
+ end feature diagram
+ 
+ begin cross-tree constraints
+ end cross-tree constraints
+ 
+ begin feature predicates	
+  	
+ end feature predicates
+ 
+ begin quantitative constraints
+ 
+ 	// Some well-formedness constraints
+   	{ bottom <= top }
+   	{ floor <= top }
+   	{ floor >= bottom }
+   	{ maxLoad < capacity }
+   	{ maxLoad > 0 }
+   	{ load >= 0}
+   	{ load <= capacity }
+   	// One could actually add constraints to specify
+   	// the domain of all variables
+ 
+ end quantitative constraints
+ 
+ begin actions
+ 
+ 	chooseProcess	//one-process: choose which process executes
+ 	changeProcess	//one-process: get back to the decision point
+ 
+ 	up			// move up
+  	down		// move down
+  	startUp     // set direction as up
+  	startDown   // set direction as down
+  	keepDir    	// continue current direction
+  	stop		// stop moving
+  	reverse		// reverse direction
+  	open		// open doors
+  	close		// close doors
+  	pressL		// press lift button
+   	pressF		// press floor button
+  	unpressL	// stop holding the lift button
+   	unpressF	// stop holding the floor button
+  	park		// park the elevator
+  	wakeup		// start moving
+  	clean		// reset buttons
+  	enter		// enter the elevator
+  	leave		// leave the elevator
+  	
+ end actions
+ 

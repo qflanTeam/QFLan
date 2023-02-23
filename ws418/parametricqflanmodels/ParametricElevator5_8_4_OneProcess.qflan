@@ -1,0 +1,496 @@
+//Writing one-process-elevator with lastFloor 5, capacity 8, and maxLoad 4 in file ParametricElevator5_8_4_OneProcess.qflan
+begin model ParametricElevator5_8_4_OneProcess
+begin variables
+	// system
+	top = 5			// top floor
+	bottom = 0		// bottom floor
+	parkingFloor = 0 
+	executiveFloor = 5
+	// elevator
+	floor = 0		// current floor
+	door = 0		// door status (open = 1, closed =0)
+	capacity = 8 	// number of persons that can enter the cabin
+	maxLoad = 4		// max persons that should enter the cabin
+	load = 0 		// current load (in number of persons)
+	direction = 0	// +1 is up, -1 is down
+	goal = 0		// floor to be reached
+	// buttons inside the lift (L) and at the floors (F)
+	// 0 means not-pushed, 1 means pushed
+	buttonL0 = 0
+	buttonL1 = 0
+	buttonL2 = 0
+	buttonL3 = 0
+	buttonL4 = 0
+	buttonL5 = 0
+	buttonF0 = 0
+	buttonF1 = 0
+	buttonF2 = 0
+	buttonF3 = 0
+	buttonF4 = 0
+	buttonF5 = 0
+end variables
+
+
+begin abstract features
+ 
+ 	Elevator
+ 
+ end abstract features
+  
+ begin concrete features
+ 
+ 	// Feature model from 
+ 	// Andreas Classen, Maxime Cordy, Patrick Heymans, Axel Legay, 
+ 	// Pierre-Yves Schobbens: Formal semantics, modular specification,
+ 	// and symbolic verification of product-line behaviour. Sci. Comput.
+ 	// Program. 80: 416-439 (2014)
+ 	AntiPrank	// Normally, a lift button will remain pushed until the
+                // corresponding floor is served. With this feature, the
+                // lift buttons have to be held pushed by a person.
+	Empty		// If the lift is empty, then all requests made in the cabin
+                // will be cancelled.
+	Executive	// One floor of the building has priority over the other floors
+                // and will be served first, both for cabin and platform requests.
+	OpenIfIdle 	// When idle, the lift opens its doors.
+	Overload	// The lift will refuse to close its doors when it is overloaded.
+	Parking 	// When idle, the lift returns to the first floor.
+	QuickClose	// The lift door cannot be kept open by holding the platform
+                // button pushed.
+	Shuttle		// The lift will only change direction at the first and last
+                // floor.
+	AlmostFull	// When the lift is two-thirds full, it will serve cabin calls
+                // before platform calls.
+				
+end concrete features
+
+ begin feature diagram
+ 
+  	Elevator -> {?AntiPrank, ?Empty, ?Executive, ?OpenIfIdle,
+  	    		     ?Overload, ?Parking, ?QuickClose, ?Shuttle, ?AlmostFull}
+ 
+ end feature diagram
+ 
+ begin cross-tree constraints
+ end cross-tree constraints
+ 
+ begin feature predicates	
+  	
+ end feature predicates
+ 
+ begin quantitative constraints
+ 
+ 	// Some well-formedness constraints
+   	{ bottom <= top }
+   	{ floor <= top }
+   	{ floor >= bottom }
+   	{ maxLoad < capacity }
+   	{ maxLoad > 0 }
+   	{ load >= 0}
+   	{ load <= capacity }
+   	// One could actually add constraints to specify
+   	// the domain of all variables
+ 
+ end quantitative constraints
+ 
+ begin actions
+ 
+ 	chooseProcess	//one-process: choose which process executes
+ 	changeProcess	//one-process: get back to the decision point
+ 
+ 	up			// move up
+  	down		// move down
+  	startUp     // set direction as up
+  	startDown   // set direction as down
+  	keepDir    	// continue current direction
+  	stop		// stop moving
+  	reverse		// reverse direction
+  	open		// open doors
+  	close		// close doors
+  	pressL		// press lift button
+   	pressF		// press floor button
+  	unpressL	// stop holding the lift button
+   	unpressF	// stop holding the floor button
+  	park		// park the elevator
+  	wakeup		// start moving
+  	clean		// reset buttons
+  	enter		// enter the elevator
+  	leave		// leave the elevator
+  	
+ end actions
+ 
+begin action constraints
+	// 5 is executive
+	// 0 is parking
+	do(open)  -> ({ door == 0 } and (
+		// top & executive
+		(  { floor == executiveFloor }
+		and
+		(
+		(has(Executive) and ({ buttonL5 == 1} or { buttonF5 == 1}))
+		//
+		or
+		(({ buttonL5 == 1} or ({ buttonF5 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		)
+		)
+		
+		// bottom & parking
+		or  (  { floor == parkingFloor }
+		and
+		(
+		(has(Parking)
+		 and { buttonL0 == 0 }
+		 and { buttonF0 == 0 }
+		 and { buttonL1 == 0 }
+		 and { buttonF1 == 0 }
+		 and { buttonL2 == 0 }
+		 and { buttonF2 == 0 }
+		 and { buttonL3 == 0 }
+		 and { buttonF3 == 0 }
+		 and { buttonL4 == 0 }
+		 and { buttonF4 == 0 }
+		 and { buttonL5 == 0 }
+		 and { buttonF5 == 0 }
+		)
+		//
+		or
+		(
+		has(Executive) implies ({ buttonF5 == 0} and { buttonL5 == 0})
+		and
+		(({ buttonL0 == 1} or ({ buttonF0 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		)
+		)
+		)
+		// Non-exec/non-park floor
+		or (
+		// Elevator is neither at the exec nor at the park floor
+		{ floor != executiveFloor } and { floor != parkingFloor}
+		// There is no request at the executive floor
+		and (has(Executive) implies ({ buttonF5 == 0} and { buttonL5 == 0}) )
+		// Elevator is at floor i
+		and (
+		( { floor == 1 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL1 == 1} or ({ buttonF1 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 2 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL2 == 1} or ({ buttonF2 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 3 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL3 == 1} or ({ buttonF3 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		or
+		( { floor == 4 }
+		// There is an internal request at floor i or an external one (if it has feature AlmostFull check if load)
+		and ({ buttonL4 == 1} or ({ buttonF4 == 1} and (has(AlmostFull) implies {load < 0.66*maxLoad})  )))
+		)		)		)	)
+	do(stop) -> (! has(Shuttle)
+		and { buttonL0 == 0 }
+		and { buttonF0 == 0 }
+		and { buttonL1 == 0 }
+		and { buttonF1 == 0 }
+		and { buttonL2 == 0 }
+		and { buttonF2 == 0 }
+		and { buttonL3 == 0 }
+		and { buttonF3 == 0 }
+		and { buttonL4 == 0 }
+		and { buttonF4 == 0 }
+		and { buttonL5 == 0 }
+		and { buttonF5 == 0 }
+	)
+
+	do(wakeup) -> (
+		 { buttonL0 == 1 }
+		or { buttonF0 == 1 }
+		or { buttonL1 == 1 }
+		or { buttonF1 == 1 }
+		or { buttonL2 == 1 }
+		or { buttonF2 == 1 }
+		or { buttonL3 == 1 }
+		or { buttonF3 == 1 }
+		or { buttonL4 == 1 }
+		or { buttonF4 == 1 }
+		or { buttonL5 == 1 }
+		or { buttonF5 == 1 }
+	)
+
+	do(park) -> (
+		 has(Parking) and { floor == parkingFloor  }
+		and { buttonL0 == 0 }
+		and { buttonF0 == 0 }
+		and { buttonL1 == 0 }
+		and { buttonF1 == 0 }
+		and { buttonL2 == 0 }
+		and { buttonF2 == 0 }
+		and { buttonL3 == 0 }
+		and { buttonF3 == 0 }
+		and { buttonL4 == 0 }
+		and { buttonF4 == 0 }
+		and { buttonL5 == 0 }
+		and { buttonF5 == 0 }
+	)
+	do(close) -> ({ door == 1 }
+   				//and (has(Parking) implies ! { direction == 0 } )
+   				and ((has(Parking) and {floor==0}) implies ! { direction == 0 } )
+   				and (has(Overload) implies { load <= maxLoad } )
+   	)
+
+   	do(up)    -> ({ direction == 1 } and { floor < top } and { door == 0 })
+
+   	do(down)  -> ({ direction == -1} and { floor > bottom } and { door == 0 })
+
+   	do(startUp) -> { floor < goal }
+
+   	do(startDown) -> {floor > goal }
+
+   	do(keepDir) -> (
+   		has(Shuttle)
+   	    or  ({ floor < goal } and { direction == 1})
+   	    or  ({ floor > goal } and { direction == -1})
+   	    )
+
+   	do(reverse) -> (
+   				has(Shuttle) and
+   			   ({ floor == top} or { floor == bottom }) 
+                )
+
+ 	do(clean) -> ( has(Empty) and { load==0 } )
+
+    do(pressL) -> { load > 0 }
+
+    do(pressF) -> true
+
+ 	do(unpressL) -> has(AntiPrank)
+
+  	do(unpressF) -> has(AntiPrank)
+
+    do(enter) -> ({ door == 1 } and { load < capacity })
+
+    //do(leave) -> ({ door == 1 } and { capacity > 0})
+    do(leave) -> ({ door == 1 } and { load > 0})
+end action constraints
+
+begin processes diagram
+	begin process RootProcess
+	states = Root,
+				//LiftProc
+				Lift,LiftTurnButtonDown,
+				//ControllerProc
+				Controller, ChooseGoal, ChooseGoalExec, ChooseDirection, ChooseGoalNonExec, ChooseGoalInside, ChooseGoalInAndOut,
+				//ButtonsProc
+				Buttons,
+				//PeopleProc
+				People
+	transitions=
+	////////
+	//ROOT//
+	////////
+	//Choose who executes
+	Root -(chooseProcess,1)-> Lift,
+	Root -(chooseProcess,1)-> Controller,
+	Root -(chooseProcess,1)-> Buttons,
+	Root -(chooseProcess,1)-> People,
+	//Go back to rootChoose who executes
+	Lift -(changeProcess,5)-> Root,
+	Controller -(changeProcess,1)-> Root,
+	Buttons -(changeProcess,24)-> Root,
+	People -(changeProcess,2)-> Root,
+
+
+	////////////
+	//LiftProc//
+	////////////
+	Lift -(open    , 1 , {door  = 1 } )-> LiftTurnButtonDown,
+	Lift -(close   , 1 , {door  = 0 } )-> Lift,
+	Lift -(up      , 1 , {floor = floor + 1} )-> Lift,
+	Lift -(down    , 1 , {floor = floor - 1} )-> Lift,
+	Lift -(clean	   , 1/*00*/ , { 
+		buttonL0 = 0 ,
+		buttonL1 = 0 ,
+		buttonL2 = 0 ,
+		buttonL3 = 0 ,
+		buttonL4 = 0 ,
+		buttonL5 = 0 })-> Lift,
+
+	LiftTurnButtonDown -(ask({floor==0}) , 100 , { buttonL0 = 0 , buttonF0 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==1}) , 100 , { buttonL1 = 0 , buttonF1 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==2}) , 100 , { buttonL2 = 0 , buttonF2 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==3}) , 100 , { buttonL3 = 0 , buttonF3 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==4}) , 100 , { buttonL4 = 0 , buttonF4 = 0 })-> Lift,
+	LiftTurnButtonDown -(ask({floor==5}) , 100 , { buttonL5 = 0 , buttonF5 = 0 })-> Lift,
+
+
+	//////////////////
+	//ControllerProc//
+	//////////////////
+	Controller -(ask(true)    , 1 )-> ChooseGoal,
+
+	ChooseGoal -(ask(has(Parking) and 
+		       {buttonL0==0} and {buttonF0==0} and
+		       {buttonL1==0} and {buttonF1==0} and
+		       {buttonL2==0} and {buttonF2==0} and
+		       {buttonL3==0} and {buttonF3==0} and
+		       {buttonL4==0} and {buttonF4==0} and
+		       {buttonL5==0} and {buttonF5==0}
+		       ) , 100 , {goal = 0} )->ChooseDirection,
+	ChooseGoal -(ask(!(has(Parking) and 
+		       {buttonL0==0} and {buttonF0==0} and
+		       {buttonL1==0} and {buttonF1==0} and
+		       {buttonL2==0} and {buttonF2==0} and
+		       {buttonL3==0} and {buttonF3==0} and
+		       {buttonL4==0} and {buttonF4==0} and
+		       {buttonL5==0} and {buttonF5==0}
+		       )) , 100 )->ChooseGoalExec,
+
+	ChooseGoalExec -(ask(has(Executive) and
+	      	  ({buttonL5==1} or {buttonF5==1})) , 100 , {goal = 5})-> ChooseDirection,
+	ChooseGoalExec -(ask( ! (has(Executive) and
+	      	  ({buttonL5==1} or {buttonF5==1}))) , 100)-> ChooseGoalNonExec,
+
+	ChooseGoalNonExec-(ask(has(AlmostFull) and
+	      	(   { buttonL0 == 1 } 
+	      	 or { buttonL1 == 1 }
+	      	 or { buttonL2 == 1 }
+	      	 or { buttonL3 == 1 }
+	      	 or { buttonL4 == 1 }
+	      	 or { buttonL5 == 1 }
+	      	 ))
+	      	 , 100
+	      )-> ChooseGoalInside,
+	ChooseGoalNonExec-(ask(!(has(AlmostFull) and
+	      	(   { buttonL0 == 1 } 
+	      	 or { buttonL1 == 1 }
+	      	 or { buttonL2 == 1 }
+	      	 or { buttonL3 == 1 }
+	      	 or { buttonL4 == 1 }
+	      	 or { buttonL5 == 1 }
+	      	 )))
+	      	 , 100
+	      )-> ChooseGoalInAndOut,
+
+	ChooseGoalInside -(ask({floor<5} and {direction>=0} and ({buttonL5==1})) , 100 , {goal = 5})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<4} and {direction>=0} and ({buttonL4==1})) , 100 , {goal = 4})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<3} and {direction>=0} and ({buttonL3==1})) , 100 , {goal = 3})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<2} and {direction>=0} and ({buttonL2==1})) , 100 , {goal = 2})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor<1} and {direction>=0} and ({buttonL1==1})) , 100 , {goal = 1})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>4} and {direction<=0} and ({buttonL4==1})) , 100 , {goal = 4})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>3} and {direction<=0} and ({buttonL3==1})) , 100 , {goal = 3})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>2} and {direction<=0} and ({buttonL2==1})) , 100 , {goal = 2})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>1} and {direction<=0} and ({buttonL1==1})) , 100 , {goal = 1})-> ChooseDirection,
+	ChooseGoalInside -(ask({floor>0} and {direction<=0} and ({buttonL0==1})) , 100 , {goal = 0})-> ChooseDirection,
+
+	ChooseGoalInAndOut -(ask({floor<5} and {direction>=0} and ({buttonL5==1} or {buttonF5==1})) , 100 , {goal = 5})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<4} and {direction>=0} and ({buttonL4==1} or {buttonF4==1})) , 100 , {goal = 4})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<3} and {direction>=0} and ({buttonL3==1} or {buttonF3==1})) , 100 , {goal = 3})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<2} and {direction>=0} and ({buttonL2==1} or {buttonF2==1})) , 100 , {goal = 2})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor<1} and {direction>=0} and ({buttonL1==1} or {buttonF1==1})) , 100 , {goal = 1})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>4} and {direction<=0} and ({buttonL4==1} or {buttonF4==1})) , 100 , {goal = 4})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>3} and {direction<=0} and ({buttonL3==1} or {buttonF3==1})) , 100 , {goal = 3})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>2} and {direction<=0} and ({buttonL2==1} or {buttonF2==1})) , 100 , {goal = 2})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>1} and {direction<=0} and ({buttonL1==1} or {buttonF1==1})) , 100 , {goal = 1})-> ChooseDirection,
+	ChooseGoalInAndOut -(ask({floor>0} and {direction<=0} and ({buttonL0==1} or {buttonF0==1})) , 100 , {goal = 0})-> ChooseDirection,
+
+	ChooseDirection -(stop      , 100 , {direction = 0 } )             -> Controller,
+	ChooseDirection -(park      , 100 , {direction = 0 , door = 1} )   -> Controller,
+	ChooseDirection -(startUp   , 100 , {direction =  1})              -> Controller,
+	ChooseDirection -(startDown , 100 , {direction = -1})              -> Controller,
+	ChooseDirection -(keepDir   , 100 )                                -> Controller,
+	ChooseDirection -(reverse   , 100 , {direction = -direction})      -> Controller,
+
+
+	///////////////
+	//ButtonsProc//12
+	///////////////
+	Buttons -(pressL , 1 , { buttonL0 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF0 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL1 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF1 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL2 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF2 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL3 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF3 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL4 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF4 = 1 })-> Buttons,
+	Buttons -(pressL , 1 , { buttonL5 = 1 })-> Buttons,
+	Buttons -(pressF , 1 , { buttonF5 = 1 })-> Buttons,
+	// Unpressing (AntiPrank feature
+	Buttons -(unpressL , 1 , { buttonL0 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF0 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL1 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF1 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL2 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF2 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL3 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF3 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL4 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF4 = 0 })-> Buttons,
+	Buttons -(unpressL , 1 , { buttonL5 = 0 })-> Buttons,
+	Buttons -(unpressF , 1 , { buttonF5 = 0 })-> Buttons,
+
+
+	//////////////
+	//PeopleProc//2
+	//////////////
+	People-(enter , 1/*0*/ , { load = load + 1 }) -> People,
+	People-(leave , 1/*0*/ , { load = load - 1 }) -> People
+	end process
+
+end processes diagram
+
+
+begin init
+  	installedFeatures = {
+  		Parking ,
+ 		AntiPrank ,
+  		Empty ,
+  		Executive ,
+  		OpenIfIdle ,
+  	    Overload ,
+  	    //Parking ,
+  	    QuickClose ,
+  	    Shuttle, 
+  	    AlmostFull
+  	}
+  	//initialProcess = Start
+  	//initialProcesses = LiftProc | ControllerProc | ButtonsProc | PeopleProc
+  	initialProcesses = RootProcess 
+end init
+ 
+/* 
+begin simulate
+	seed = 1 
+	steps = 10
+	file = "./simulation.txt"
+end simulate
+*/
+
+/*
+begin analysis
+  	query = eval from 1 to 500 by 1 : {floor}
+  	default delta =0.1
+  	alpha = 0.1
+  	parallelism = 1
+  	simulations block = 25
+  	intermediate results = 10
+end analysis
+*/
+
+begin analysis
+	queryFile ="./MultiQuaTEx/untilElevator5000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator10000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator15000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator20000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator25000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator30000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator35000.multiquatex"
+	//queryFile ="./MultiQuaTEx/untilElevator40000.multiquatex"
+	delta = "0.01"
+	alpha = 0.1
+	parallelism= 1
+	simulations block = 60
+	intermediate results = 50
+	
+	logs = "logsElevator5_8_4_OneProcess.csv"
+
+end analysis
+end model

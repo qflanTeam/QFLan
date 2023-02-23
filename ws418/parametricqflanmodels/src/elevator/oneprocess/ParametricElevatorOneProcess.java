@@ -1,4 +1,4 @@
-package elevator;
+package elevator.oneprocess;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -8,35 +8,39 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 
-public class ParametricElevator {
 
+public class ParametricElevatorOneProcess {
 	public static void main(String[] args) throws IOException {
-//		int lastFloor=4;
-//		int capacity=8;
-//		int maxLoad=4;
-		int lastFloor=2;
-		int capacity=2;
-		int maxLoad=1;
-		if(args.length==3){
-			lastFloor=Integer.valueOf(args[0]);
-			capacity=Integer.valueOf(args[1]);
-			maxLoad=Integer.valueOf(args[2]);
-		}
-		
-		ParametricElevator b= new ParametricElevator();
-		b.createElevator(lastFloor,capacity,maxLoad);
+		//		int lastFloor=4;
+		//for(int lastFloor=5;lastFloor<=40;lastFloor+=5) {
+			int capacity=8;
+			int maxLoad=4;
+			//
+			int lastFloor=2;
+			//int capacity=2;
+			//int maxLoad=1;
+			if(args.length==3){
+				lastFloor=Integer.valueOf(args[0]);
+				capacity=Integer.valueOf(args[1]);
+				maxLoad=Integer.valueOf(args[2]);
+			}
+
+			ParametricElevatorOneProcess b= new ParametricElevatorOneProcess();
+			b.createElevator(lastFloor,capacity,maxLoad);
+		//}
 	}
 	
 	private void createElevator(int lastFloor,int capacity,int maxLoad) throws IOException {
 		//Floors are from 0 to lastFloor
 		//Executive is lastFloor, parking is 0
+		String suffix=lastFloor+"_"+capacity+"_"+maxLoad+"_OneProcess";
+		String fileName="ParametricElevator"+suffix+".qflan";
 		
-		String fileName="ParametricElevator"+lastFloor+"_"+capacity+"_"+maxLoad+".qflan";
-		
-		System.out.println("Writing elevator with lastFloor "+lastFloor+", capacity "+capacity+", and maxLoad "+maxLoad+" in file "+fileName);
+		System.out.println("Writing one-process-elevator with lastFloor "+lastFloor+", capacity "+capacity+", and maxLoad "+maxLoad+" in file "+fileName);
 		BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
 		String nl="\n";
-		bw.write("begin model ParametricElevator"+lastFloor+"_"+capacity+"_"+maxLoad+nl);
+		bw.write("//Writing one-process-elevator with lastFloor "+lastFloor+", capacity "+capacity+", and maxLoad "+maxLoad+" in file "+fileName+nl);
+		bw.write("begin model ParametricElevator"+suffix+nl);
 		bw.write("begin variables"+nl);		 
 		bw.write("\t// system"+nl);
 		bw.write("\ttop = "+lastFloor+"			// top floor"+nl);
@@ -161,17 +165,48 @@ public class ParametricElevator {
 //		bw.write("begin processes"+nl);
 //		writeFixedCode(bw, nl,"processes.txt");
 //		bw.write("end processes"+nl+nl);
-
+		
+		
 		bw.write("begin processes diagram"+nl);
-
-		bw.write("\tbegin process LiftProc"+nl);
-		bw.write("\tstates = Lift,LiftTurnButtonDown"+nl);
+		bw.write("\tbegin process RootProcess"+nl);
+		bw.write("\tstates = Root,"+nl);
+		bw.write("\t			//LiftProc"+nl);
+		bw.write("\t			Lift,LiftTurnButtonDown,"+nl);
+		bw.write("\t			//ControllerProc"+nl);
+		bw.write("\t			Controller, ChooseGoal, ChooseGoalExec, ChooseDirection, ChooseGoalNonExec, ChooseGoalInside, ChooseGoalInAndOut,"+nl);
+		bw.write("\t			//ButtonsProc"+nl);
+		bw.write("\t			Buttons,"+nl);
+		bw.write("\t			//PeopleProc"+nl);
+		bw.write("\t			People"+nl);
 		bw.write("\ttransitions="+nl);
+		bw.write("\t////////"+nl);
+		bw.write("\t//ROOT//"+nl);
+		bw.write("\t////////"+nl);
+		bw.write("\t//Choose who executes"+nl);
+		bw.write("\tRoot -(chooseProcess,1)-> Lift,"+nl);
+		bw.write("\tRoot -(chooseProcess,1)-> Controller,"+nl);
+		bw.write("\tRoot -(chooseProcess,1)-> Buttons,"+nl);
+		bw.write("\tRoot -(chooseProcess,1)-> People,"+nl);
+		bw.write("\t//Go back to rootChoose who executes"+nl);
+		bw.write("\tLift -(changeProcess,5)-> Root,"+nl);
+		bw.write("\tController -(changeProcess,1)-> Root,"+nl);
+		bw.write("\tButtons -(changeProcess,"+(2*2*(lastFloor+1))+")-> Root,"+nl);
+		bw.write("\tPeople -(changeProcess,2)-> Root,"+nl);
+		bw.write(nl);
+		bw.write(nl);
+		
+		bw.write("\t////////////"+nl);
+		bw.write("\t//LiftProc//"+nl);
+		bw.write("\t////////////"+nl);
+		//bw.write("begin processes diagram"+nl);
+		//bw.write("\tbegin process LiftProc"+nl);
+		//bw.write("\tstates = Lift,LiftTurnButtonDown"+nl);
+		//bw.write("\ttransitions="+nl);
 		bw.write("\tLift -(open    , 1 , {door  = 1 } )-> LiftTurnButtonDown,"+nl);
 		bw.write("\tLift -(close   , 1 , {door  = 0 } )-> Lift,"+nl);
 		bw.write("\tLift -(up      , 1 , {floor = floor + 1} )-> Lift,"+nl);
 		bw.write("\tLift -(down    , 1 , {floor = floor - 1} )-> Lift,"+nl);
-		bw.write("\tLift -(clean	   , 100 , { "+nl);
+		bw.write("\tLift -(clean	   , 1/*00*/ , { "+nl);
 		for(int i=0;i<lastFloor;i++){
 			bw.write("\t\tbuttonL"+i+" = 0 ,"+nl);
 		}
@@ -179,14 +214,17 @@ public class ParametricElevator {
 		for(int i=0;i<lastFloor;i++){
 			bw.write("\tLiftTurnButtonDown -(ask({floor=="+i+"}) , 100 , { buttonL"+i+" = 0 , buttonF"+i+" = 0 })-> Lift,"+nl);
 		}
-		bw.write("\tLiftTurnButtonDown -(ask({floor=="+lastFloor+"}) , 100 , { buttonL"+lastFloor+" = 0 , buttonF"+lastFloor+" = 0 })-> Lift"+nl);
-		bw.write("\tend process"+nl+nl);
-
+		bw.write("\tLiftTurnButtonDown -(ask({floor=="+lastFloor+"}) , 100 , { buttonL"+lastFloor+" = 0 , buttonF"+lastFloor+" = 0 })-> Lift,"+nl);
+		//bw.write("\tend process"+nl+nl);
+		bw.write(nl);
+		bw.write(nl);
 		
-		//TODO: write ControllerProc
-		bw.write("\tbegin process ControllerProc"+nl);
-		bw.write("\tstates=Controller, ChooseGoal, ChooseGoalExec, ChooseDirection, ChooseGoalNonExec, ChooseGoalInside, ChooseGoalInAndOut"+nl);
-		bw.write("\ttransitions="+nl);
+		bw.write("\t//////////////////"+nl);
+		bw.write("\t//ControllerProc//"+nl);
+		bw.write("\t//////////////////"+nl);
+		//bw.write("\tbegin process ControllerProc"+nl);
+		//bw.write("\tstates=Controller, ChooseGoal, ChooseGoalExec, ChooseDirection, ChooseGoalNonExec, ChooseGoalInside, ChooseGoalInAndOut"+nl);
+		//bw.write("\ttransitions="+nl);
 		bw.write("\tController -(ask(true)    , 1 )-> ChooseGoal,"+nl+nl);
 
 		bw.write("\tChooseGoal -(ask(has(Parking) and "+nl);
@@ -248,14 +286,17 @@ public class ParametricElevator {
 		bw.write("\tChooseDirection -(startUp   , 100 , {direction =  1})              -> Controller,"+nl);
 		bw.write("\tChooseDirection -(startDown , 100 , {direction = -1})              -> Controller,"+nl);
 		bw.write("\tChooseDirection -(keepDir   , 100 )                                -> Controller,"+nl);
-		bw.write("\tChooseDirection -(reverse   , 100 , {direction = -direction})      -> Controller"+nl);     
-		bw.write("\tend process"+nl+nl);
-
+		bw.write("\tChooseDirection -(reverse   , 100 , {direction = -direction})      -> Controller,"+nl);     
+		//bw.write("\tend process"+nl+nl);
+		bw.write(nl);
+		bw.write(nl);
 		
-		
-		bw.write("\tbegin process ButtonsProc"+nl);
-		bw.write("\tstates=Buttons"+nl);
-		bw.write("\ttransitions="+nl);
+		bw.write("\t///////////////"+nl);
+		bw.write("\t//ButtonsProc//12"+nl);
+		bw.write("\t///////////////"+nl);
+		//bw.write("\tbegin process ButtonsProc"+nl);
+		//bw.write("\tstates=Buttons"+nl);
+		//bw.write("\ttransitions="+nl);
 		for(int i=0;i<=lastFloor;i++){
 			bw.write("\tButtons -(pressL , 1 , { buttonL"+i+" = 1 })-> Buttons,"+nl);
 			bw.write("\tButtons -(pressF , 1 , { buttonF"+i+" = 1 })-> Buttons,"+nl);
@@ -266,19 +307,28 @@ public class ParametricElevator {
 			bw.write("\tButtons -(unpressF , 1 , { buttonF"+i+" = 0 })-> Buttons,"+nl);
 		}						
 		bw.write("\tButtons -(unpressL , 1 , { buttonL"+lastFloor+" = 0 })-> Buttons,"+nl);
-		bw.write("\tButtons -(unpressF , 1 , { buttonF"+lastFloor+" = 0 })-> Buttons"+nl);
-		bw.write("\tend process"+nl+nl);
+		bw.write("\tButtons -(unpressF , 1 , { buttonF"+lastFloor+" = 0 })-> Buttons,"+nl);
+		//bw.write("\tend process"+nl+nl);
 
-		bw.write("\tbegin process PeopleProc"+nl);
-		bw.write("\tstates = People"+nl);
-		bw.write("\ttransitions ="+nl);
-		bw.write("\tPeople-(enter , 10 , { load = load + 1 }) -> People,"+nl);
-		bw.write("\tPeople-(leave , 10 , { load = load - 1 }) -> People"+nl);
+		bw.write(nl);
+		bw.write(nl);
+		bw.write("\t//////////////"+nl);
+		bw.write("\t//PeopleProc//2"+nl);
+		bw.write("\t//////////////"+nl);
+		
+		//bw.write("\tbegin process PeopleProc"+nl);
+		//bw.write("\tstates = People"+nl);
+		//bw.write("\ttransitions ="+nl);
+		bw.write("\tPeople-(enter , 1/*0*/ , { load = load + 1 }) -> People,"+nl);
+		bw.write("\tPeople-(leave , 1/*0*/ , { load = load - 1 }) -> People"+nl);
 		bw.write("\tend process"+nl+nl);
 		
 		bw.write("end processes diagram"+nl+nl);
 		
 		writeFixedCode(bw, nl,"fromBeginInitToEndModel.txt");
+		bw.write("\tlogs = \"logsElevator"+suffix+".csv\""+nl+nl);
+		bw.write("end analysis"+nl);
+		bw.write("end model"+nl);
 
 		System.out.println("Completed");
 		
@@ -379,4 +429,5 @@ public class ParametricElevator {
 		br.close();
 		bw.close();
 	}
+
 }
